@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>login page</title>
+        <link rel="stylesheet" href="login.css">
+        <link href="css/jquery.mobile-1.0rc1.min.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="phonegap.js"></script>
+        <script type="text/javascript" src="js/jquery-1.6.4.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile-1.0rc1.min.js"></script>
+  <!--      <script type="text/javascript" src="phonegap-1.1.0.js"></script> -->
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/camera.js"></script>
+        <script type="text/javascript" src="js/media.js"></script>
+    </head>
+    
+    
+    <body>
+<div data-role="page" id="newExercisePage">
+
+	<div data-role="header">
+		<h1>新しいレッスン</h1>
+	</div>
+
+	<div data-role="content" id="newExercisePage">
+       
+        <div data-role="fieldcontain">
+            <button type="button" onclick="location.href='index.html';">もどる</button>
+            <input id="backToTeacher" name="backToTeacher" type="button" value="先生の部屋へ" />
+        </div>
+
+		<form id="newExerciseForm" method="post">
+            <div data-role="fieldcontain">
+                <label for="backToTeacher"></label>
+            </div>
+			<input type="hidden" name="exerciseID" id="exerciseID" value="">
+			<div data-role="fieldcontain">
+				<label for="exerciseTitle">れんしゅう名</label>
+				<input type="text" name="exerciseTitle" id="exerciseTitle">
+			</div>
+			<div data-role="fieldcontain">
+				<label for="exerciseImage"></label>
+                <a onclick="capturePhoto('lesson');" data-role="button" data-icon="plus"　name="exerciseImage" id="exerciseImage">画像</a>
+			</div>
+
+			<div data-role="fieldcontain">
+				<label for="exerciseVoice"></label>
+                <a onclick="recordAudio();" data-role="button" data-icon="plus"　name="exerciseVoice" id="exerciseVoice">音声</a>
+                <p id="audio_position"></p><br>
+			</div>
+			<div data-role="fieldcontain">
+				<input type="submit" id="newExerciseFormSubmitButton" value="OK">
+			</div>
+		</form>
+        <img style="display:none;width:60px;height:60px;" id="sImage" src="" />
+            
+	</div>
+</div>
+
+</body>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>レッスン</title>
+        <link rel="stylesheet" href="login.css">
+        <link href="css/jquery.mobile-1.0rc1.min.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" src="phonegap.js"></script>
+        <script type="text/javascript" src="js/jquery-1.6.4.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile-1.0rc1.min.js"></script>
+  <!--      <script type="text/javascript" src="phonegap-1.1.0.js"></script> -->
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript" src="js/camera.js"></script>
+        <script type="text/javascript" src="js/media.js"></script>
+    </head>
+    
+    
+    <body>
+      <div id="lesson" data-role="page" onload="">
+        <script>
+           // $(document).bind('pageload',"#teacher",initLesson);
+        </script>
+        <h1>ようこそ 先生</h1>
+        <button type="button" onclick="location.href='index.html';">もどる</button>
+        <div data-role="fieldcontain">
+            <label for="newExercise">新しい練習</label>
+            <input type="hidden" id="lessonID" name="lessonID" value="">
+            <a href="NewExercise.html" data-role="button" data-icon="plus">+</a>
+        </div>
+        
+        <div data-role="fieldcontain">
+            <label for="exerciseList">元の練習</label> </br>
+            <div id="exerciseList">
+                
+            </div>
+        </div>
+      
+      </div>
+    </body>
+</html>
