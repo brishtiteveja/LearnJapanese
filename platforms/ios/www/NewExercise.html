@@ -25,14 +25,16 @@
 	<div data-role="content" id="newExercisePage">
        
         <div data-role="fieldcontain">
-            <button type="button" onclick="location.href='index.html';">もどる</button>
-            <input id="backToTeacher" name="backToTeacher" type="button" value="先生の部屋へ" />
+            <button type="button" onclick="location.href='index.html';">ホーム</button>
+            <input id="backToTeacher" action="Teacher.html" name="backToTeacher" type="button" value="先生の部屋へ" />
         </div>
 
-		<form id="newExerciseForm" method="post">
+		<form id="newExerciseForm" action = "Lesson.html" method="post">
             <div data-role="fieldcontain">
                 <label for="backToTeacher"></label>
             </div>
+            <input type="hidden" id="teacherID" name="teacherID" value="">
+            <input type="hidden" id="lessonID" name="lessonID" value="">
 			<input type="hidden" name="exerciseID" id="exerciseID" value="">
 			<div data-role="fieldcontain">
 				<label for="exerciseTitle">れんしゅう名</label>
@@ -53,7 +55,15 @@
 			</div>
 		</form>
         <img style="display:none;width:60px;height:60px;" id="sImage" src="" />
-            
+        
+        <script>
+                $(document).ready(function(){
+                    $("#backToTeacher").click(function(){
+                            console.log("Back to teacher button pressed.");
+                            $.mobile.changePage("Teacher.html",{reverse:false});
+                    });
+                });
+        </script>
 	</div>
 </div>
 

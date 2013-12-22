@@ -56,33 +56,84 @@ $("#teacher").live('pageinit',function(){
             console.log("Initialize lessons for teacher page.");
             teacherID = 1;
             initLesson();
+            
+//            $(document).ready(function(){
+//                $("#backToTeacherFirst").live('click',function(){
+//                    $.mobile.changePage("TeacherLogin.html",{reverse:false});
+//                });
+//            });
 });
 
+//initialize lessons for teacher page
+function initLesson(){
+    
+    // Opening Lessons Database
+    openDataBaseAndCreateTable('lessons');
+
+////pass teacher id,lesson id to newExercise Page from the newExercise submit button
+    $(document).ready(function(){
+                                $("#newLessonFormButton").click(function(){
+                                        console.log("New Lesson Click.");
+                                        $.mobile.changePage("NewExercise.html",{reverse:false});
+                                     });
+
+                                }
+    );
+    
+//    $("#teacher").live("pageshow",function(){
+//        var loc = $(this).data("url");
+//        console.log("Teacher page url : " + loc);
+//        if(loc.indexOf("?") >= 0){
+//            var qs = loc.substr(loc.indexOf("?")+1,loc.length);
+//            var teacherID = qs.split("=")[1];
+//            console.log("Teacher ID: " + teacherID);
+//        }
+//    })
+}
+
 $("#lesson").live('pageinit',function(){
-        
+    console.log("Teacher id : " + $("#teacherID").val());//
+    teacherID = $("#teacherID").val();
+    
+    var loc = $(this).data("url");
+    
+    if(loc.indexOf("?") >= 0){
+        var s = loc.substr(loc.indexOf("?") + 1,loc.length);
+        lessonID = s.split("=")[1];
+    }else{
+    
+    }
+    console.log(loc);
+    console.log("Lesson " + lessonID + " Page initialized. "); //
+
 });
 
 
 //new Exercise page load initialization
 $("#newExercisePage").live('pageinit',function(){
+                console.log("Got lesson ID: " + lessonID);
                 console.log("New Exercise Page");
                 dbShellLessons.transaction(function(tx){
                                     //get new Lesson ID
                                     tx.executeSql(
                                         "select DISTINCT lesson_id from lessons where teacher_id=?",[teacherID],
                                         function(tx,results){
+                                            //set teacher id
+                                            console.log("Setting teacher id : " + teacherID);
+                                            $(document).ready(function(){
+                                                            console.log("setting " + teacherID + " to the teacherID hidden field")
+                                                            $("#teacherID").val(teacherID);
+                                            });
+                                        
                                             numberOfLessons = results.rows.length;
-                                            console.log("Number of distict rows in lessons DB = " + numberOfLessons);
+                                            console.log("Number of distict rows in lessons DB = " + numberOfLessons + "for teacher " + teacherID);
                                             //set new lesson id
                                             lessonID = numberOfLessons + 1;
                                             console.log("Setting new Lesson id : " + lessonID);
-                                            //setting lesson id for the lesson page
-                                            $(document).ready(
-                                                function(){
-                                                    $("#lessonID").val(lessonID);
-                                                }
-                                            );
-                                      
+                                            $(document).ready(function(){
+                                                            console.log("setting " + lessonID + " to the lessonID hidden field")
+                                                            $("#lessonID").val(lessonID);
+                                                    });
                                             //Now get new exercise id
                                             tx.executeSql(
                                                 "select DISTINCT exercise_id from lessons where teacher_id=? and lesson_id=?",
@@ -96,7 +147,6 @@ $("#newExercisePage").live('pageinit',function(){
                                                     $(document).ready(function(){
                                                             console.log("setting " + exerciseID + " to the exerciseID hidden field")
                                                             $("#exerciseID").val(exerciseID);
-                                                            console.log($("#exerciseID").val());
                                                     });
                                                 },
                                                 function(err){
@@ -112,15 +162,11 @@ $("#newExercisePage").live('pageinit',function(){
                                     );
                                     
                                 },dberrorhandler);
-                $(document).ready(function(){
-                    $("#backToTeacher").click(function(){
-                            console.log("Back to teacher button pressed.");
-                            $.mobile.changePage("Teacher.html",{reverse:false});
-                    });
-                });
+                   
 });
 
-//handle exercise form submission
+
+                //handle exercise form submission
 $("#newExerciseForm").live("submit",function(e) {
             console.log("New exercise form submission.");
             var data =  {
@@ -128,21 +174,50 @@ $("#newExerciseForm").live("submit",function(e) {
                             l_id        :   lessonID,
                             ex_id       :   $("#exerciseID").val(), //blank id perhaps
                             ex_title    :   $("#exerciseTitle").val(),
+                            ex_voice    :   "",//$("#exerciseVoice").val()
                             ex_image    :   imageURIForDBSave
-                            //ex_voice    :   $("#exerciseVoice").val()
                         };
             //console log the student data being registered
             console.log(data);
-//            //registering the student
-//            registerExercise(data,function() {
-//            //callback function change to the next page, currently the same page
-//                $.mobile.changePage("NewExercise.html",{reverse:false});
-//            });
-//            //Student registration success
-//            console.log("Exercise Registered Successfully and page changed to New Lesson Page again.");
-//            e.preventDefault();
+                        
+            //registering the new exercise
+           registerExercise(data,function() {
+                    $(document).ready(function(){
+                            $.mobile.changePage("Lesson.html?id="+lessonID,{reverse:false});
+                    });
+
+            });
+            //Student registration success
+            console.log("Exercise Registered Successfully and page changed to New Lesson Page again.");
+          //  e.preventDefault();
 });
 
+//Registering exercise data in lesson database
+function registerExercise(exercise,cb){
+    if(exercise.ex_id != ""){
+        console.log("Exercise Registration Start");
+        dbShellLessons.transaction(
+                    function(tx){
+                    //CREATE TABLE IF NOT EXISTS lessons(lessonRow_id INTEGER,teacher_id INTEGER,lesson_id INTEGER,exercise_id INTEGER,exercise_title,\
+                    //exercise_voice,exercise_image,PRIMARY KEY(lessonRow_id))
+                        tx.executeSql("insert into lessons(teacher_id,lesson_id,exercise_id,exercise_title,exercise_voice,exercise_image) \
+                                        values(?,?,?,?,?,?)",
+                            [exercise.t_id, exercise.l_id, exercise.ex_id, exercise.ex_title, exercise.ex_voice, exercise.ex_image],
+                            function(tx,results){
+                                    console.log("Exercise data registered in the lessons database.");
+                            },
+                            function(err){
+                                console.log("Exercise Register DB tx Error: "+err.message + "\nCode="+err.code);
+                                alert("Exercise Register DB tx Error: "+err.message + "\nCode="+err.code);
+                            }
+                        );
+                    },function(err){
+                                console.log("Exercise Register DB Error: "+err.message + "\nCode="+err.code);
+                                alert("Exercise Register DB Error: "+err.message + "\nCode="+err.code);
+                    }
+        );
+    }
+}
 
 function determineImageURIForDB(imageURI){
     imageURIForDBSave = imageURI;
@@ -304,15 +379,16 @@ function openDataBaseAndCreateTable(who){
 //create Table for Lessons Database
 function setupTableForLessons(tx){
     console.log("before execute sql for Lessons Database");
-    tx.executeSql("CREATE TABLE IF NOT EXISTS lessons(teacher_id INTEGER,lesson_id INTEGER,exercise_id INTEGER,exercise_title,\
-              exercise_voice,exercise_image,PRIMARY KEY(teacher_id,lesson_id,exercise_id))");
+    tx.executeSql("CREATE TABLE IF NOT EXISTS lessons(lessonRow_id INTEGER,teacher_id INTEGER,lesson_id INTEGER,exercise_id INTEGER,exercise_title,\
+              exercise_voice,exercise_image,PRIMARY KEY(lessonRow_id))");
     console.log("Created table if not existed for Lessons Database");
 }
 
 function getEntriesFromLessons(){
     console.log("Getting Lesson Entries for Teacher Page.");
     dbShellLessons.transaction(function(tx){
-            tx.executeSql("select teacher_id,lesson_id,exercise_id,exercise_title,exercise_voice,exercise_image from lessons order by teacher_id,lesson_id,exercise_id",[]
+            // Need only lesson id , exercise image and title for the teacher page lesson directory
+            tx.executeSql("select lesson_id,exercise_title,exercise_image from lessons group by lesson_id",[]
             ,renderEntriesForLessons,dberrorhandlerForLessons);
     },dberrorhandlerForLessons);
 }
@@ -322,11 +398,20 @@ function renderEntriesForLessons(tx,results){
     if (results.rows.length == 0) {
         $("#lessonsList").html("<p>レッスンはまだないです。</p>");
     } else {
-        var s = "";
+        var s = "<table id='lessons'><tr>";
+        console.log("Number of lessons = " + results.rows.length);
         for(var i=0; i<results.rows.length; i++) {
             //console.log("resuts:" + results.rows.item(i).name);
-            s += "<li><p><a href='Lesson.html?id="+results.rows.item(i).id + "'>" + results.rows.item(i).name + "</a></p></li><br>";
+            s = s + "<div id ='lesson"+ i +"'>"+
+                      "<li>"            +
+                          "<img height='100' width='100' src='" + results.rows.item(i).exercise_image + "' ><br>"               +
+                          "<p>"         +
+                                "<a href='Lesson.html?id=" + results.rows.item(i).lesson_id + "'>" + results.rows.item(i).exercise_title + "</a>" +
+                          "</p>"        +
+                      "</li>"       +
+                  "</div>";
         }
+        s += "</tr></table>";
         $("#lessonsList").html(s);
         $("#lessonsList").listview().listview("refresh"); 
     }
@@ -394,49 +479,8 @@ function countLessonsFromDatabase(tID){
 
     console.log(lessonNum);
 }
-//initialize lessons for teacher page
-function initLesson(){
-    
-    // Opening Lessons Database
-    openDataBaseAndCreateTable('lessons');
-
-////pass teacher id,lesson id to newExercise Page from the newExercise submit button
-    $(document).ready(function(){
-                                $("#newLessonFormButton").click(function(){
-                                        console.log("New Lesson Click.");
-                                        $.mobile.changePage("NewExercise.html",{reverse:false});
-                                     });
-
-                                }
-    );
-    
-//    $("#teacher").live("pageshow",function(){
-//        var loc = $(this).data("url");
-//        console.log("Teacher page url : " + loc);
-//        if(loc.indexOf("?") >= 0){
-//            var qs = loc.substr(loc.indexOf("?")+1,loc.length);
-//            var teacherID = qs.split("=")[1];
-//            console.log("Teacher ID: " + teacherID);
-//        }
-//    })
-}
 
 
 
-//Registering exercise data in lesson database
-//function registerExercise(exercise,cb){
-//    if(exercise.ex != ""){
-//    console.log("Student Register Start");
-//    dbShellStudents.transaction(function(tx) {
-//                if(student.id == "")
-//                    tx.executeSql("insert into students(name,image) values(?,?)",[student.name,student.image]); //No need to insert student ID, because ID is the Primary Key, so automatically incremented
-//                else
-//                    tx.executeSql("update students set name=?,image=? where id=?",[student.name,student.image,student.id]);
-//                    },dberrorhandler,cb);
-//    console.log("Student Register End")
-//  }else{
-//      console.log("Can't Register Student. No name.")
-//      alert("名前を入れてください。");
-//  }
-//}
+
 

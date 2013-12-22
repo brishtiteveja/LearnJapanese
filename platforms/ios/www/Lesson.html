@@ -17,15 +17,11 @@
     
     <body>
       <div id="lesson" data-role="page" onload="">
-        <script>
-           // $(document).bind('pageload',"#teacher",initLesson);
-        </script>
-        <h1>ようこそ 先生</h1>
-        <button type="button" onclick="location.href='index.html';">もどる</button>
+        <h1>レッスン</h1>
+        <button type="button" onclick="location.href='index.html';">ホーム</button>
         <div data-role="fieldcontain">
             <label for="newExercise">新しい練習</label>
-            <input type="hidden" id="lessonID" name="lessonID" value="">
-            <a href="NewExercise.html" data-role="button" data-icon="plus">+</a>
+            <a id="newExerciseButton" href="NewExercise.html" data-role="button" data-icon="plus">+</a>
         </div>
         
         <div data-role="fieldcontain">
@@ -34,7 +30,13 @@
                 
             </div>
         </div>
-      
+        <script>
+            $(document).ready(function(){
+                $("#newExerciseButton").live('click',function(){
+                    $.mobile.changePage("NewExercise.html",{reverse:false});
+                });
+            })
+        </script>
       </div>
     </body>
 </html>

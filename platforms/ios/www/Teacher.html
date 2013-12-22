@@ -17,11 +17,9 @@
     
     <body>
       <div data-role="page" id="teacher">
-        <script>
-
-        </script>
         <h1>ようこそ 先生</h1>
-        <button type="button" onclick="location.href='index.html';">もどる</button>
+        <button type="button" onclick="location.href='index.html';">ホーム</button>
+        <input type="button" action="TeacherLogin.html" id="backToTeacherFirst" name="backToTeacherFirst" value="ログインページ">
         
 
         <div data-role="fieldcontain">
@@ -37,7 +35,16 @@
                 
             </div>
         </div>
+        <script>
+                $(document).ready(function(){
+                    $("#backToTeacherFirst").click(function(){
+                            console.log("Back to teacher button pressed.");
+                            $.mobile.changePage("TeacherLogin.html",{reverse:false});
+                    });
+                });
+        </script>
       
       </div>
+
     </body>
 </html>
