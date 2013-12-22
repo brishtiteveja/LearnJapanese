@@ -26,7 +26,7 @@
        
         <div data-role="fieldcontain">
             <button type="button" onclick="location.href='index.html';">ホーム</button>
-            <input id="backToTeacher" action="Teacher.html" name="backToTeacher" type="button" value="先生の部屋へ" />
+            <input id="backToTeacher" name="backToTeacher" type="button" value="先生の部屋へ" />
         </div>
 
 		<form id="newExerciseForm" action = "Lesson.html" method="post">
@@ -38,6 +38,10 @@
 			<input type="hidden" name="exerciseID" id="exerciseID" value="">
 			<div data-role="fieldcontain">
 				<label for="exerciseTitle">れんしゅう名</label>
+				<input type="text" name="exerciseTitle" id="exerciseTitle">
+			</div>
+            <div data-role="fieldcontain">
+				<label for="exerciseDetail">れんしゅう</label>
 				<input type="text" name="exerciseTitle" id="exerciseTitle">
 			</div>
 			<div data-role="fieldcontain">
