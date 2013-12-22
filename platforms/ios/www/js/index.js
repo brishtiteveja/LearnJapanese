@@ -82,7 +82,7 @@ function initLesson(){
 //            console.log("Teacher ID: " + teacherID);
 //        }
 //    })
-}
+
 
 $("#lesson").live('pageinit',function(){
     console.log("Teacher id : " + $("#teacherID").val());//
