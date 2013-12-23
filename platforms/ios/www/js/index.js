@@ -88,6 +88,7 @@ $("#teacher").live('pageshow',function(){
 $("#lesson").live('pageinit',function(){
     //render exercise after opening the database
     openDataBaseAndCreateTable('lessonPage');
+//    openDataBaseAndCreateTable('ResponseForExercise');
 })
 
 $("#lesson").live('pageshow',function(){
@@ -118,7 +119,7 @@ $("#exercise").live('pageshow',function(){
         var s = loc.substr(loc.indexOf("?") + 1,loc.length);
         exerciseID = s.split("=")[1];
     }else{
-    
+        alert("Something is wrong in the exercise page.")
     }
     console.log(loc);
     
@@ -435,10 +436,28 @@ function openDataBaseAndCreateTable(who){
         dbShellLessons = window.openDatabase("Lessons",2,"Lessons",1000000);
         console.log("Lessons Database is opened");
         dbShellLessons.transaction(setupTableForLessons,dberrorhandlerForLessons,getExerciseEntriesFromLessons);
+    }else if(who == 'ResponseForExercise'){
+        console.log("ResponseAndMarks Database start open to get Exercises for lesson " + lessonID + " and exercise " + exerciseID);
+        dbShellLessons = window.openDatabase("ResponseAndMarks",2,"ResponseAndMarks",1000000);
+        console.log("ResponseAndMarks Database is opened");
+        dbShellLessons.transaction(setupTableForResponseAndMarks,dberrorhandlerForResponseForExercise,getResponseEntriesForExercise);
+    }else if(who == 'ResponseForStudent'){
+        console.log("ResponseAndMarks Database start open to get Exercises for lesson " + lessonID + " and exercise " + exerciseID);
+        dbShellLessons = window.openDatabase("ResponseAndMarks",2,"ResponseAndMarks",1000000);
+        console.log("ResponseAndMarks Database is opened");
+        dbShellLessons.transaction(setupTableForResponseAndMarks,dberrorhandlerForResponseForStudent,getResponseEntriesForStudent);
     }
 }
 
-//create Table for Lessons Database
+//setup table for studentProfile Database
+function setupTable(tx){
+    console.log("before execute sql for studentProfile Database");
+    tx.executeSql("CREATE TABLE IF NOT EXISTS students(id INTEGER PRIMARY KEY,name,image)");
+    console.log("Created table if not existed for studentProfile Database");
+    console.log("after execute sql in studentProfile Database");
+}
+
+//setup Table for Lessons Database
 function setupTableForLessons(tx){
     console.log("before execute sql for Lessons Database");
     tx.executeSql("CREATE TABLE IF NOT EXISTS lessons(lessonRow_id INTEGER,teacher_id INTEGER,lesson_id INTEGER,exercise_id INTEGER,exercise_title,exercise_detail,\
@@ -446,6 +465,15 @@ function setupTableForLessons(tx){
     console.log("Created table if not existed for Lessons Database");
 }
 
+//setup Table for ResponseAndMarks
+function setupTableForResponseAndMarks(tx){
+    console.log("before execute sql for ResponseAndMarks Database");
+    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmarks(row_id INTEGER,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
+    exercise_id INTEGER,response,scoremark,comment,PRIMARY KEY(row_id))");
+    console.log("Created table if not existed for ResponseAndMarks Database");
+}
+
+//Get from Lessons Database
 function getEntriesFromLessons(){
     console.log("Getting Lesson Entries");
     dbShellLessons.transaction(function(tx){
@@ -455,15 +483,65 @@ function getEntriesFromLessons(){
     },dberrorhandlerForLessons);
 }
 
+//Get exercise from Lessons Database
 function getExerciseEntriesFromLessons(){
     console.log("Getting Exercise Entries for lesson Page " + lessonID);
-    dbShellLessons.transaction(function(tx){
+    dbShellLessons.transaction(function(tx){   // put teacher_id also
             tx.executeSql("select lessonRow_id,teacher_id,lesson_id,exercise_id,exercise_title,exercise_detail,\
               exercise_voice,exercise_image from lessons where lesson_id=? group by exercise_id",[lessonID]
             ,renderEntriesForExerciseInLessonPage,dberrorhandlerForLessons);
     },dberrorhandlerForLessons);
 }
 
+//Get response entries of all students for exercise from ResponseAndMarks Database
+function getResponseEntriesForExercise(){
+    console.log("Getting Response entries of all students from Response and \n Score Marks for \
+    teacher " + teacherID +", lesson " + lessonID +" and exercise " + exerciseID);
+    dbShellLessons.transaction(function(tx){
+            tx.executeSql("select row_id,teacher_id,student_id,lesson_id,exercise_id,response,scoremark,comment\
+              from ResponseAndMarks where teacher_id=? and lesson_id=? and exercise_id=? order by student_id",[teacherID,lessonID,exerciseID]
+            ,renderResponseEntriesForExercise,dberrorhandlerForResponseForExercise);
+    },dberrorhandlerForLessons);
+}
+
+//Get response entries of a student for all exercises from ResponseAndMarks Database
+function getResponseEntriesForStudent(){
+    console.log("Getting all exercise response entries for \
+    teacher " + teacherID +", lesson " + lessonID +" and student " + studentID);
+    dbShellLessons.transaction(function(tx){
+            tx.executeSql("select row_id,teacher_id,student_id,lesson_id,exercise_id,response,scoremark,comment\
+              from ResponseAndMarks where teacher_id=? and student_id=? order by lesson_id,exercise_id",[teacherID,studentID]
+            ,renderResponseEntriesForStudent,dberrorhandlerForResponseForStudent);
+    },dberrorhandlerForLessons);
+}
+
+//Get students from StudentProfile Database
+function getEntries() {
+    console.log("Getting Entries");
+    dbShellStudents.transaction(function(tx) {
+                tx.executeSql("select id,name,image from students order by name",[],renderEntries,dberrorhandler);
+      }, dberrorhandler);
+}
+
+//render entries for studentProfile Database
+function renderEntries(tx,results){
+    console.log("Rendering Entries");
+    console.log("Number of Students = " + results.rows.length);
+    if (results.rows.length == 0) {
+        $("#studentList").html("<p>No registered students.</p>");
+    } else {
+        var s = "";
+        for(var i=0; i<results.rows.length; i++) {
+            //console.log("resuts:" + results.rows.item(i).name);
+            s += "<li><p><a href='#student?id="+results.rows.item(i).id + "'>" + results.rows.item(i).name + "</a></p></li><br>";
+        }
+        $("#studentList").html(s);
+        
+    }
+    $("#studentList").listview().listview("refresh");
+}
+
+//render entries for lessons
 function renderEntriesForLessons(tx,results){
     console.log("Rendering entries for lessons.");
     if (results.rows.length == 0) {
@@ -488,6 +566,7 @@ function renderEntriesForLessons(tx,results){
     }
 }
 
+//render entries for exercise
 function renderEntriesForExerciseInLessonPage(tx,results){
     console.log("Rendering exercise entries for lesson " + lessonID);
     if (results.rows.length == 0) {
@@ -512,46 +591,35 @@ function renderEntriesForExerciseInLessonPage(tx,results){
     }
 }
 
-function dberrorhandlerForLessons(){
+//render responses for an exercise
+function renderResponseEntriesForExercise(tx,results){
+
+}
+
+//render responses for a student
+function renderResponseEntriesForStudent(tx,results){
+
+}
+
+//Lessons Database Error Handler
+function dberrorhandlerForLessons(err){
     console.log("Lessons DB Error: "+err.message + "\nCode="+err.code);
     alert("Lessons DB Error: "+err.message + "\nCode="+err.code);
 }
 
-//I just create our initial table - all one of em
-function setupTable(tx){
-    console.log("before execute sql for studentProfile Database");
-    tx.executeSql("CREATE TABLE IF NOT EXISTS students(id INTEGER PRIMARY KEY,name,image)");
-    console.log("Created table if not existed for studentProfile Database");
-    console.log("after execute sql in studentProfile Database");
+//Response entries for a exercise Database Error Handler
+function dberrorhandlerForResponseForExercise(err){
+    console.log("Response entries for Exercise DB Error: "+err.message + "\nCode="+err.code);
+    alert("Response entries for Exercise DB Error: "+err.message + "\nCode="+err.code);
 }
 
-//I handle getting entries from the db
-function getEntries() {
-    console.log("Getting Entries");
-    dbShellStudents.transaction(function(tx) {
-                tx.executeSql("select id,name,image from students order by name",[],renderEntries,dberrorhandler);
-      }, dberrorhandler);
+//Response entries for a student error handler
+function dberrorhandlerForResponseForStudent(err){
+    console.log("Response entries for a student DB Error: "+err.message + "\nCode="+err.code);
+    alert("Response entries for for a student DB Error: "+err.message + "\nCode="+err.code);
 }
 
-//After getting Entries from database data will be rendered in this function
-function renderEntries(tx,results){
-    console.log("Rendering Entries");
-    console.log("Number of Students = " + results.rows.length);
-    if (results.rows.length == 0) {
-        $("#studentList").html("<p>No registered students.</p>");
-    } else {
-        var s = "";
-        for(var i=0; i<results.rows.length; i++) {
-            //console.log("resuts:" + results.rows.item(i).name);
-            s += "<li><p><a href='#student?id="+results.rows.item(i).id + "'>" + results.rows.item(i).name + "</a></p></li><br>";
-        }
-        $("#studentList").html(s);
-        
-    }
-    $("#studentList").listview().listview("refresh");
-}
-
-//Database Error Handler
+//StudentProfile Database Error Handler
 function dberrorhandler(err){
     console.log("Student Profile DB Error: "+err.message + "\nCode="+err.code);
     alert("Student Profile DB Error: "+err.message + "\nCode="+err.code);
