@@ -4,11 +4,32 @@ var destinationType = null; // sets the format of returned value
 
 
 function onPhotoURISuccessForLesson(imageURI){
-    console.log(imageURI);
+    console.log("練習の画像: "+ imageURI);
     determineImageURIForDB(imageURI);
+    
+    console.log("Show the Exercise image.");
+
+    $("#exerciseImageHolder").css("display","block");
+
+    $("#exerciseImageHolder").attr("src",imageURI);
+        //Show save button
+    $("#saveImage").html("画像を保存する");
+    $("#saveImage").show();
 }
 
+function onPhotoURISuccessForStudent(imageURI){
+    console.log("学生の画像: " + imageURI);
+    determineImageURIForDB(imageURI);
+    
+    console.log("Show student image.");
 
+    $("#studentImageHolder").css("display","block");
+
+    $("#studentImageHolder").attr("src",imageURI);
+        //Show save button
+    $("#saveStudentImage").html("画像を保存する");
+    $("#saveStudentImage").show();
+}
 
 function moveAndsaveImageToDB(){
     if(imageURIForDBSave != null){
@@ -18,10 +39,23 @@ function moveAndsaveImageToDB(){
     }
 }
 
+function moveAndsaveStudentImageToDB(){
+    if(imageURIForDBSave != null){
+        movePicForStudent(imageURIForDBSave);
+    }else{
+        console.log(imageURIForDBSave + " : Image URI not save yet.");
+    }
+}
+
 function movePicForLesson(imageURI){
-    console.log("Moving picture " + imageURI);                  /*file:///var/mobile/Applications/CCC3486E-1004-4158-A44A-7142ECB4DA0E/Documents */
+    console.log("Moving exercise picture " + imageURI);                  /*file:///var/mobile/Applications/CCC3486E-1004-4158-A44A-7142ECB4DA0E/Documents */
     
     window.resolveLocalFileSystemURI(imageURI, resolveOnSuccessForLesson, resOnErrorForLesson);
+}
+
+function movePicForStudent(imageURI){
+    console.log("Moving student picture " + imageURI);                  /*file:///var/mobile/Applications/CCC3486E-1004-4158-A44A-7142ECB4DA0E/Documents */
+    window.resolveLocalFileSystemURI(imageURI, resolveOnSuccessForStudent, resOnErrorForStudent);
 }
 
 // requestFileSystem calls
@@ -31,13 +65,13 @@ function movePicForLesson(imageURI){
 
 //Callback function when the file system uri has been resolved
 function resolveOnSuccessForLesson(entry){
-    console.log("Resolve on success moving.");
+    console.log("Resolve on exercise image success moving.");
     console.log(entry.fullPath);
     var d = new Date();
     var n = d.getTime();
     //new file name
     var newFileName = n + ".jpg";
-    var myFolderApp = "Lessons";
+    var myFolderApp = "LessonImages";
 
     window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSys) {      
         //The folder is created if doesn't exist
@@ -49,8 +83,28 @@ function resolveOnSuccessForLesson(entry){
                     resOnErrorForLesson);
                     },
     resOnErrorForLesson);
-    console.log("hello");
     
+}
+
+function resolveOnSuccessForStudent(entry){
+    console.log("Resolve on student image success moving.");
+    console.log(entry.fullPath);
+    var d = new Date();
+    var n = d.getTime();
+    //new file name
+    var newFileName = n + ".jpg";
+    var myFolderApp = "StudentImages";
+
+    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSys) {      
+        //The folder is created if doesn't exist
+        fileSys.root.getDirectory( myFolderApp,
+                    {create:true, exclusive: false},
+                    function(directory) {
+                        entry.moveTo(directory, newFileName,  successMoveForStudent, resOnErrorForStudent);
+                    },
+                    resOnErrorForStudent);
+                    },
+    resOnErrorForStudent);
 }
 
 //Callback function when the file has been moved successfully - inserting the complete path
@@ -68,11 +122,22 @@ function successMoveForLesson(entry) {
 //    $("#smallImage").attr("src",imageFileURI);
 }
 
-function resOnErrorForLesson(error) {
-    console.log("Error in moving file to the folder.");
-    alert(error.code);
+function successMoveForStudent(entry){
+    console.log("Moved the student picture to the folder successfully.");
+    console.log("New File path after moving:" + entry.fullPath);
+
+    determineImageURIForDB(entry.fullPath);
 }
 
+function resOnErrorForLesson(error) {
+    console.log("Error in moving exercise image file to the folder: "+err.message + "\nCode="+err.code);
+    alert("Error in moving exercise image file to the folder: "+err.message + "\nCode="+err.code);
+}
+
+function resOnErrorForStudent(error){
+    console.log("Error in moving student image file to the folder: "+err.message + "\nCode="+err.code);
+    alert("Error in moving student image file to the folder: "+err.message + "\nCode="+err.code);
+}
 
 // A button will call this function
 //
@@ -103,6 +168,10 @@ function getPhoto(source,page) {
     if(page=='lesson'){
         // Take picture using device camera and retrieve image as base64-encoded string
         navigator.camera.getPicture(onPhotoURISuccessForLesson, onCameraFail, { quality: 50,
+                                destinationType: destinationType.FILE_URI,
+                                sourceType: source });
+    }else if(page =='student'){
+         navigator.camera.getPicture(onPhotoURISuccessForStudent, onCameraFail, { quality: 50,
                                 destinationType: destinationType.FILE_URI,
                                 sourceType: source });
     }

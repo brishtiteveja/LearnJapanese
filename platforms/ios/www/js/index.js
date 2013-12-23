@@ -33,7 +33,9 @@ var dbShellResponsesForStudent=null;
 var imageURIForDBSave = ""; // image path to save in the lessons database
 var audioURIForDBSave = ""; // audio path to save in the lessons database
 
-
+//student, teacher flag
+var isStudent;
+var isTeacher;
 
 
 $("#indexPage").live('pageinit',function(){
@@ -55,20 +57,48 @@ $("#indexPage").live('pageshow',function(){
 //)
 
 $("#studentLogin").live('pageshow',function(){
+            isStudent = true;
+            isTeacher = false;
             init('student');
 });
 
 var teacherID;
 var lessonID;
 var exerciseID;
+var studentID;
+
+$("#teacherLogin").live('pageshow',function(){
+    isTeacher = true;
+    isStudent = false;
+});
+
 //teacher page load initialization
 $("#teacher").live('pageinit',function(){
+    if(isStudent){
+        $(".teacherOnly").hide();
+        $(".studentOnly").show();
+    }
+    if(isTeacher){
+        $(".studentOnly").hide();
+        $(".teacherOnly").show();
+    }
+    
     teacherID = 1;
     console.log("Initialize lessons for teacher page.");
     initLesson();
 });
 
 $("#teacher").live('pageshow',function(){
+    //hide new lesson button if student
+    if(isStudent){
+        $(".teacherOnly").hide();
+        $(".studentOnly").show();
+    }
+    if(isTeacher){
+        $(".studentOnly").hide();
+        $(".teacherOnly").show();
+    }
+    
     teacherID = 1;
     console.log("Initialize lessons for teacher page.");
     initLesson();
@@ -87,6 +117,16 @@ $("#teacher").live('pageshow',function(){
 
 $("#lesson").live('pageinit',function(){
     //render exercise after opening the database
+    
+    //hide new exercise button
+    if(isStudent){
+        $(".teacherOnly").hide();
+        $(".studentOnly").show();
+    }
+    if(isTeacher){
+        $(".teacherOnly").show();
+        $(".studentOnly").hide();
+    }
     openDataBaseAndCreateTable('lessonPage');
 })
 
@@ -253,13 +293,13 @@ $("#student").live("pageshow", function() {
                 if(loc.indexOf("?") >= 0) {
                     var qs = loc.substr(loc.indexOf("?")+1,loc.length);
                     console.log("qs :" + qs);
-                    var studentId = qs.split("=")[1];
-                    console.log("studentId:" + studentId);
+                    studentID = qs.split("=")[1];
+                    console.log("studentID:" + studentID);
                     //load the values
                     $("#studentFormSubmitButton").attr("disabled","disabled");
                     dbShellStudents.transaction(
                                         function(tx) {
-                                                tx.executeSql("select id,name,image from students where id=?",[studentId],function(tx,results) {
+                                                tx.executeSql("select id,name,image from students where id=?",[studentID],function(tx,results) {
                                                               $("#studentId").val(results.rows.item(0).id);
                                                               $("#studentName").val(results.rows.item(0).name);
                                                               $("#studentImage").val(results.rows.item(0).image);
@@ -335,15 +375,6 @@ function registerExercise(exercise,cb){
 function determineImageURIForDB(imageURI){
     imageURIForDBSave = imageURI;
     console.log("Image URI variable set.");
-    console.log("Show the image.");
-
-    $("#exerciseImageHolder").css("display","block");
-
-    $("#exerciseImageHolder").attr("src",imageURI);
-        //Show save button
-    $("#saveImage").html("画像を保存する");
-    $("#saveImage").show();
-
 }
 
 function determineAudioURIForDB(audioURI){
