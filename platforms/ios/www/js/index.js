@@ -24,6 +24,10 @@
 var dbShellStudents=null;
 //Lessons database
 var dbShellLessons=null;
+//Responses for exercise
+var dbShellResponsesForExercise=null;
+//Responses for student
+var dbShellResponsesForStudent=null;
 
 //URI
 var imageURIForDBSave = ""; // image path to save in the lessons database
@@ -60,12 +64,6 @@ $("#teacher").live('pageinit',function(){
     teacherID = 1;
     console.log("Initialize lessons for teacher page.");
     initLesson();
-            
-//            $(document).ready(function(){
-//                $("#backToTeacherFirst").live('click',function(){
-//                    $.mobile.changePage("#teacherLogin",{reverse:false,transition:"pop"});
-//                });
-//            });
 });
 
 $("#teacher").live('pageshow',function(){
@@ -88,7 +86,6 @@ $("#teacher").live('pageshow',function(){
 $("#lesson").live('pageinit',function(){
     //render exercise after opening the database
     openDataBaseAndCreateTable('lessonPage');
-//    openDataBaseAndCreateTable('ResponseForExercise');
 })
 
 $("#lesson").live('pageshow',function(){
@@ -123,7 +120,10 @@ $("#exercise").live('pageshow',function(){
     }
     console.log(loc);
     
-    console.log("Exercise Page " + exerciseID + " in Lesson " + lessonID + "  initialized. ");
+    console.log("Exercise " + exerciseID + " page of Lesson " + lessonID + "  initialized. ");
+    
+    openDataBaseAndCreateTable('responseForExercise');
+    
 });
 
 
@@ -436,16 +436,16 @@ function openDataBaseAndCreateTable(who){
         dbShellLessons = window.openDatabase("Lessons",2,"Lessons",1000000);
         console.log("Lessons Database is opened");
         dbShellLessons.transaction(setupTableForLessons,dberrorhandlerForLessons,getExerciseEntriesFromLessons);
-    }else if(who == 'ResponseForExercise'){
+    }else if(who == 'responseForExercise'){
         console.log("ResponseAndMarks Database start open to get Exercises for lesson " + lessonID + " and exercise " + exerciseID);
-        dbShellLessons = window.openDatabase("ResponseAndMarks",2,"ResponseAndMarks",1000000);
+        dbShellResponsesForExercise = window.openDatabase("ResponseAndMarks",2,"ResponseAndMarks",1000000);
         console.log("ResponseAndMarks Database is opened");
-        dbShellLessons.transaction(setupTableForResponseAndMarks,dberrorhandlerForResponseForExercise,getResponseEntriesForExercise);
-    }else if(who == 'ResponseForStudent'){
+        dbShellResponsesForExercise.transaction(setupTableForResponseAndMarks,dberrorhandlerForResponseForExercise,getResponseEntriesForExercise);
+    }else if(who == 'responseForStudent'){
         console.log("ResponseAndMarks Database start open to get Exercises for lesson " + lessonID + " and exercise " + exerciseID);
-        dbShellLessons = window.openDatabase("ResponseAndMarks",2,"ResponseAndMarks",1000000);
+        dbShellResponsesForStudent = window.openDatabase("ResponseAndMarks",2,"ResponseAndMarks",1000000);
         console.log("ResponseAndMarks Database is opened");
-        dbShellLessons.transaction(setupTableForResponseAndMarks,dberrorhandlerForResponseForStudent,getResponseEntriesForStudent);
+        dbShellResponsesForStudent.transaction(setupTableForResponseAndMarks,dberrorhandlerForResponseForStudent,getResponseEntriesForStudent);
     }
 }
 
@@ -593,6 +593,58 @@ function renderEntriesForExerciseInLessonPage(tx,results){
 
 //render responses for an exercise
 function renderResponseEntriesForExercise(tx,results){
+    console.log("Rendering response entries of all students for exercise " + exerciseID + " of lesson "+ lessonID + " of teacher " + teacherID);
+    if (results.rows.length == 0) {
+        $("#studentAndScoresList").html("<p>この練習はだれも答えてないです。</p>");
+    } else {
+        var s = "<table id='studentAndScores'><tr>";
+        console.log("Number of responses from students = " + results.rows.length);
+        
+        for(var i=0; i<results.rows.length; i++) {
+            //getting student info
+            var student_ID = results.rows.item(i).student_id;
+            var studentImageURI;
+            var studentName;
+            
+            //open student database
+            var dbShellStudentsForExercise = window.openDatabase("StudentProfile",2,"StudentProfile",1000000);
+            //get info from StudentProfile database for student_id
+            dbShellStudentsForExercise.transaction(function(tx1) {
+                tx1.executeSql("select id,name,image from students where id=?",[student_ID],
+                        function(tx2,res){
+                            //studentID is unique
+                            studentImageURI = res.rows.item(0).image;
+                            studentName = res.rows.item(0).name;
+                            
+                            //show student image, student name and score mark
+                            s = s +
+                             "<div id ='exercise"+ i +"'>"+
+                                "<li>"            +
+                                    "<img height='40' width='40' src='" + studentImageURI + "' ><br>"               +
+                                    "<p>"         +
+                                        "<a href='#response?studentId=" + student_ID + "'> 学生名:" + studentName + "</a>" +
+                                    "</p><br>";
+                               
+                            if(results.rows.item(i).scoremark != null){
+                                    s += "<p> スコアー:" + results.rows.item(i).scoremark + "</p>";
+                            }else{
+                                    s += "";
+                            }
+                            s +="</li>"+"</div>";
+                        },
+                        function(err){
+                            console.log("Student info get Error: "+err.message + "\nCode="+err.code);
+                            alert("Student info get Error: "+err.message + "\nCode="+err.code);
+                        });
+            }, function(err){
+                console.log("Student info get DB Error: "+err.message + "\nCode="+err.code);
+                alert("Student info get DB Error: "+err.message + "\nCode="+err.code);
+            });
+        }
+        s += "</tr></table>";
+        $("#studentAndScoresList").html(s);
+        $("#studentAndScoresList").listview().listview("refresh"); 
+    }
 
 }
 
