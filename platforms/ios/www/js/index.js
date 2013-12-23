@@ -37,7 +37,9 @@ var audioURIForDBSave = ""; // audio path to save in the lessons database
 
 
 $("#indexPage").live('pageinit',function(){
+            snowfall();
             initialize();
+            
 });
 
 //index page load initialization
@@ -122,7 +124,42 @@ $("#exercise").live('pageshow',function(){
     
     console.log("Exercise " + exerciseID + " page of Lesson " + lessonID + "  initialized. ");
     
-    openDataBaseAndCreateTable('responseForExercise');
+    //show exercise infor in html divs
+    console.log("Getting Exercise infor from lessons database for exercise " + exerciseID);
+    dbShellLessons.transaction(function(tx){   // put teacher_id also
+            tx.executeSql("select lessonRow_id,teacher_id,lesson_id,exercise_id,exercise_title,exercise_detail,\
+              exercise_voice,exercise_image from lessons where teacher_id=? and lesson_id=? and exercise_id=?",
+              [teacherID,lessonID,exerciseID]
+            ,function(tx,results){
+                //set image for the exercise
+                $("#exImage").css("display","block");
+                $("#exImage").attr("src",results.rows.item(0).exercise_image);
+                console.log("Exercise image set success.");
+                
+                //set title for the exercise
+                $("#exTitle").html(results.rows.item(0).exercise_title);
+                console.log("Exercise title set success.");
+                
+                //set details for the exercise
+                $("#exDetail").html(results.rows.item(0).exercise_detail);
+                console.log("Exercise detail set success.");
+                
+                //set recording for the exercise
+                console.log("playAudio(\"" + results.rows.item(0).exercise_voice + "\");");
+                $("#exRecord").attr("onclick","playAudio(\"" + results.rows.item(0).exercise_voice + "\");");
+                console.log("Exercise record set success.");
+            },
+            function(err){
+                console.log("Exercise info get Error: "+err.message + "\nCode="+err.code);
+                alert("Exercise info get Error: "+err.message + "\nCode="+err.code);
+            });
+    },function(err){
+                console.log("Exercise info get DB Error: "+err.message + "\nCode="+err.code);
+                alert("Exercise info get DB Error: "+err.message + "\nCode="+err.code);
+    });
+    
+    //open response database, get entries for studentandscoresList
+   // openDataBaseAndCreateTable('responseForExercise');
     
 });
 
@@ -683,6 +720,94 @@ function countLessonsFromDatabase(tID){
     console.log(lessonNum);
 }
 
+
+//snowfall effect
+function snowfall(){
+	//canvas init
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	
+	//canvas dimensions
+	var W = window.innerWidth;
+	var H = window.innerHeight;
+	canvas.width = W;
+	canvas.height = H;
+	
+	//snowflake particles
+	var mp = 25; //max particles
+	var particles = [];
+	for(var i = 0; i < mp; i++)
+	{
+		particles.push({
+			x: Math.random()*W, //x-coordinate
+			y: Math.random()*H, //y-coordinate
+			r: Math.random()*4+1, //radius
+			d: Math.random()*mp //density
+		})
+	}
+	
+	//Lets draw the flakes
+	function draw()
+	{
+		ctx.clearRect(0, 0, W, H);
+		
+		ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+		ctx.beginPath();
+		for(var i = 0; i < mp; i++)
+		{
+			var p = particles[i];
+			ctx.moveTo(p.x, p.y);
+			ctx.arc(p.x, p.y, p.r, 0, Math.PI*2, true);
+		}
+		ctx.fill();
+		update();
+	}
+	
+	//Function to move the snowflakes
+	//angle will be an ongoing incremental flag. Sin and Cos functions will be applied to it to create vertical and horizontal movements of the flakes
+	var angle = 0;
+	function update()
+	{
+		angle += 0.01;
+		for(var i = 0; i < mp; i++)
+		{
+			var p = particles[i];
+			//Updating X and Y coordinates
+			//We will add 1 to the cos function to prevent negative values which will lead flakes to move upwards
+			//Every particle has its own density which can be used to make the downward movement different for each flake
+			//Lets make it more random by adding in the radius
+			p.y += Math.cos(angle+p.d) + 1 + p.r/2;
+			p.x += Math.sin(angle) * 2;
+			
+			//Sending flakes back from the top when it exits
+			//Lets make it a bit more organic and let flakes enter from the left and right also.
+			if(p.x > W+5 || p.x < -5 || p.y > H)
+			{
+				if(i%3 > 0) //66.67% of the flakes
+				{
+					particles[i] = {x: Math.random()*W, y: -10, r: p.r, d: p.d};
+				}
+				else
+				{
+					//If the flake is exitting from the right
+					if(Math.sin(angle) > 0)
+					{
+						//Enter from the left
+						particles[i] = {x: -5, y: Math.random()*H, r: p.r, d: p.d};
+					}
+					else
+					{
+						//Enter from the right
+						particles[i] = {x: W+5, y: Math.random()*H, r: p.r, d: p.d};
+					}
+				}
+			}
+		}
+	}
+	
+	//animation loop
+	setInterval(draw, 33);
+}
 
 
 

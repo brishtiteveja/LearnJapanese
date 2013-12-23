@@ -36,6 +36,7 @@ body {
         color-stop(0.51, #E4E4E4)
     );
     background-attachment:fixed;
+
     font-family:'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
     font-size:12px;
     height:100%;
@@ -45,14 +46,39 @@ body {
     width:100%;
 }
 
+#wrap{
+    height:1024px;                   /* text area height */
+    width:1024px;                   /* text area width */
+    background: #6b92b9;
+}
+canvas {
+	display: block;
+}
+
 /* Portrait layout (default) */
 .app {
-    background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
+   // background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
+    background:url(../img/top.gif) no-repeat center top;
+
     position:absolute;             /* position in the center of the screen */
-    left:50%;
-    top:50%;
-    height:50px;                   /* text area height */
-    width:225px;                   /* text area width */
+    left:300px;
+    top:25%;
+    height:480px;                   /* text area height */
+    width:640px;                   /* text area width */
+    text-align:center;
+    padding:180px 0px 0px 0px;     /* image height is 200px (bottom 20px are overlapped with text) */
+    margin:-115px 0px 0px -112px;  /* offset vertical: half of image height and text area height */
+                                   /* offset horizontal: half of text area width */
+}
+#demoButtonContainer{
+   // background:url(../img/logo.png) no-repeat center top; /* 170px x 200px */
+  //  background:url(../img/top.gif) no-repeat center top;
+//   	background: #6b92b9;
+    position:absolute;             /* position in the center of the screen */
+    left:68%;
+    top:10px;
+    height:100px;                   /* text area height */
+    width:300px;                   /* text area width */
     text-align:center;
     padding:180px 0px 0px 0px;     /* image height is 200px (bottom 20px are overlapped with text) */
     margin:-115px 0px 0px -112px;  /* offset vertical: half of image height and text area height */
@@ -62,20 +88,59 @@ body {
 /* Landscape layout (with min-width) */
 @media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
     .app {
-        background-position:left center;
-        padding:75px 0px 75px 170px;  /* padding-top + padding-bottom + text area = image height */
-        margin:-90px 0px 0px -198px;  /* offset vertical: half of image height */
+       // background-position:left center;
+        //padding:75px 0px 75px 170px;  /* padding-top + padding-bottom + text area = image height */
+        //margin:-90px 0px 0px -198px;  /* offset vertical: half of image height */
                                       /* offset horizontal: half of image width and text area width */
     }
 }
 
+#lesson{
+    background:url(../img/snowMan.jpg);
+
+}
+#teacher{
+    background:url(../img/snowMan.jpg);
+}
+#teacherLogin{
+    background:url(../img/snowMan.jpg);
+}
+#studentLogin{
+    background:url(../img/snowMan.jpg);
+}
+#student{
+    background:url(../img/lesson2.jpg);
+}
+#exercise{
+    background:url(../img/snowMan.jpg);
+}
+#newExercise{
+    background:url(../img/snowMan.jpg);
+}
+#response{
+    background:url(../img/snowMan.jpg);
+}
+
 h1 {
-    font-size:24px;
-    font-weight:normal;
+    font-size:30px;
+    font-weight:bold;
     margin:0px;
     overflow:visible;
     padding:0px;
     text-align:center;
+}
+
+.lbl{
+    font-size: 20px;
+    font-weight:bold;
+    font-color:black;
+}
+
+
+p{
+    font-size: 20px;
+    font-weight:bold;
+    font-color:black;
 }
 
 .event {
@@ -93,8 +158,9 @@ h1 {
 }
 
 .event.received {
-    background-color:#4B946A;
+    background-color:#FF0000;
     display:none;
+    font-size:20px;
 }
 
 @keyframes fade {

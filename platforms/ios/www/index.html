@@ -34,16 +34,29 @@
         <script type="text/javascript" src="js/media.js"></script>
     </head>
     <body>
-       <div id="indexPage" data-role="page">
-        <div class="app">
-            <h1>Learn Japanese</h1>
-            <a href="#studentLogin" > がくせいデモ </a> <br>
-            <a href="#teacherLogin"> せんせいデモ </a> <br>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
+
+      <div id="indexPage" data-role="page">
+        <div id="wrap">
+         <canvas id="canvas"> </canvas>
+         <div class="app">
+
+          <div id = "demoButtonContainer">
+            <h1>日本語を学ぼう</h1>
+            <div data-role="fieldcontain">
+                <a id="studentDemo" data-role="button" > <h2> がくせい デモ</h2></a> <br>
             </div>
             
+            <div data-role="fieldcontain">
+                <a id="teacherDemo" data-role="button"> <h2> せんせい デモ </h2></a> <br>
+            </div>
+            
+            <div id="deviceready" class="blink">
+                <p class="event listening">Connecting to Device</p>
+                <p class="event received">ハッピー・クリスマス</p>
+            </div>
+        </div>
+       </div>
+ <!--
             <button onclick="capturePhoto();">Capture Photo</button> <br>
             <button onclick="capturePhotoEdit();">Capture Editable Photo</button> <br>
             <button onclick="getPhoto(pictureSource.PHOTOLIBRARY);">From Photo Library</button><br>
@@ -59,6 +72,20 @@
             <button onclick="stopRecord()"> Stop Record</button> <br>
             <button onclick="playAudio()">Play</button>
             <button onclick="resolveFile()">resolveFile</button> <br>
+-->
+            <script>
+                $(document).ready(function(){
+                    $("#studentDemo").click(function(){
+                        $.mobile.changePage("#studentLogin",{reverse:false,transition:"fade"})
+                    });
+                });
+                
+                $(document).ready(function(){
+                    $("#teacherDemo").click(function(){
+                        $.mobile.changePage("#teacherLogin",{reverse:false,transition:"fade"})
+                    });
+                });
+            </script>
         </div>
        </div>
     
@@ -75,12 +102,12 @@
         <input type="button" id="gakuseiNoHeyaButton" name="gakuseiNoHeyaButton" value="学生の部屋へ">
         
         <div data-role="fieldcontain">
-            <label for="newExerciseButton">新しい練習</label>
+            <label class="lbl" for="newExerciseButton">新しい練習</label>
             <a id="newExerciseButton" href="#newExercise" data-role="button" data-icon="plus">+</a>
         </div>
         
         <div data-role="fieldcontain">
-            <label for="exerciseList">元の練習</label> </br>
+            <label class="lbl" for="exerciseList">元の練習</label> </br>
             <div id="exerciseList">
                 
             </div>
@@ -121,19 +148,19 @@
             <button type="button" onclick="location.href='index.html';">ホーム</button>
             
             <div data-role="fieldcontain">
-				<label for="exImage"></label>
+				<label class="lbl" for="exImage"></label>
                 <img id="exImage" style="display:none;width:60px;height:60px;" src="" />
             </div>
             <div data-role="fieldcontain">
-				<label for="exTitle" style="font-size=0.8em;">れんしゅう名</label>
+				<label class="lbl" for="exTitle" style="font-size=0.8em;">れんしゅう名</label>
 				<h1 id="exTitle" name="exTitle" > <h1>
 			</div>
             <div data-role="fieldcontain">
-                <label for="exVoice"></label>
-                <a id="exVoice" name="exVoice"  onclick="playRecordedAudio();" data-role="button">練習を聞いてください</a>
+                <label class="lbl" for="exRecord"></label>
+                <a id="exRecord" name="exRecord" onclick="" data-role="button">練習を聞いてください</a>
 			</div>
             <div data-role="fieldcontain">
-                <label for="exDetail">れんしゅうについて</label>
+                <label class="lbl" for="exDetail">れんしゅうについて</label>
 				<h3 id="exDetail" name="exDetail"> </h3>
 			</div>
             
@@ -143,7 +170,7 @@
         </div>
         
         <div data-role="fieldcontain">
-            <label for="studentListForEx">練習をやった学生一覧</label> </br>
+            <label class="lbl" for="studentListForEx">練習をやった学生一覧</label> </br>
             <div id="studentListForEx">
                 
             </div>
@@ -183,48 +210,48 @@
 
 		<form id="newExerciseForm" method="post">
             <div data-role="fieldcontain">
-                <label for="backToTeacher"></label>
+                <label class="lbl" for="backToTeacher"></label>
             </div>
             <input type="hidden" id="teacherID" name="teacherID" value="">
             <input type="hidden" id="lessonID" name="lessonID" value="">
 			<input type="hidden" name="exerciseID" id="exerciseID" value="">
 			<div data-role="fieldcontain">
-				<label for="exerciseTitle">れんしゅう名</label>
+				<label class="lbl" for="exerciseTitle">れんしゅう名</label>
 				<input type="text" name="exerciseTitle" id="exerciseTitle">
 			</div>
             <div data-role="fieldcontain">
-				<label for="exerciseDetail">れんしゅうについて</label>
+				<label class="lbl" for="exerciseDetail">れんしゅうについて</label>
 				<input type="text" name="exerciseDetail" id="exerciseDetail">
 			</div>
 			<div data-role="fieldcontain">
-				<label for="exerciseImage"></label>
+				<label class="lbl" for="exerciseImage"></label>
                 <a onclick="getPhoto(pictureSource.PHOTOLIBRARY,'lesson');" data-role="button" data-icon="plus"　name="exerciseImage" id="exerciseImage">画像をとってください</a>
 			</div>
 
             <div data-role="fieldcontain">
-				<label for="exerciseImageHolder"></label>
+				<label class="lbl" for="exerciseImageHolder"></label>
                 <img id="exerciseImageHolder" style="display:none;width:200px;height:200px;" src="">
 			</div>
             <div data-role="fieldcontain">
-				<label for="saveImage"></label>
+				<label class="lbl" for="saveImage"></label>
                 <a id="saveImage" name="saveImage" onclick="moveAndsaveImageToDB();" data-role="button" style="display:none;"></a>
             </div>
             <div data-role="fieldcontain">
-                <label for="exerciseRecord"></label>
+                <label class="lbl" for="exerciseRecord"></label>
                 <a id="exerciseRecord" name="exerciseRecord" onclick="recordAudio();" data-role="button" data-icon="plus">録音してください</a>
                 <p id="audioPositionForRecording"></p>
             </div>
             <div data-role="fieldcontain">
-                <label for="stopRecordBtn"></label>
+                <label class="lbl" for="stopRecordBtn"></label>
                 <a id="stopRecordBtn" name="stopRecordBtn" onclick="stopRecord();" data-role="button" data-icon="plus">録音終了</a>
             </div>
 			<div data-role="fieldcontain">
-				<label for="exerciseVoice"></label>
+				<label class="lbl" for="exerciseVoice"></label>
                 <a onclick="playRecordedAudio();" data-role="button" data-icon="plus"　name="exerciseVoice" id="exerciseVoice">録音後聞いてください</a>
                 <p id="audioPositionForRecordPlay"></p>
 			</div>
             <div data-role="fieldcontain">
-				<label for="saveRecord"></label>
+				<label class="lbl" for="saveRecord"></label>
                 <a onclick="" data-role="button" data-icon="plus"　name="saveRecord" id="saveRecord">録音を保存</a>
 			</div>
 
@@ -272,12 +299,12 @@
                 <input type="hidden" name="studentId" id="studentId" value="">
                 <!--Student Image -->
                 <div data-role="fieldcontain">
-                    <label for="studentImage">画像</label>
+                    <label class="lbl" for="studentImage">画像</label>
                     <input type="text" name="studentImage" id="studentImage">
                 </div>
                 <!--Student Name -->
                 <div data-role="fieldcontain">
-                    <label for="studentName">名前</label>
+                    <label class="lbl" for="studentName">名前</label>
                     <input type="text" name="studentName" id="studentName"><br>
                 </div>
                 <!--Submit Button -->
@@ -308,14 +335,14 @@
         
 
         <div data-role="fieldcontain">
-            <label for="newLessonFormButton">新しいレッスン</label>
+            <label class="lbl" for="newLessonFormButton">新しいレッスン</label>
             <input type="button" id="newLessonFormButton" name="newLessonFormButton" value="+">
         </div>
 
 
         
         <div data-role="fieldcontain">
-            <label for="lessonsList">元のレッスン</label> </br>
+            <label class="lbl" for="lessonsList">元のレッスン</label> </br>
             <div id="lessonsList">
                 
             </div>
@@ -341,13 +368,25 @@
     <!-- Teacher Login Page -->
     <div id="teacherLogin" data-role="page" >
         <h1>ようこそ</h1>
-        <button type="button" onclick="location.href='index.html';">ホーム</button>
+        <button type="button" onclick="location.href='index.html';">ホーム</button><br>
+        <div data-role="fieldcontain">
+            <label class="lbl" for="teacherPassword"><p>パスワード</p></label>
+            <input id="teacherPassword" type="text">
+        </div>
+        <div data-role="fieldcontain">
+            <a id="teacherClick" href="javascript:void(0);id?1" data-role="button" onclick="jumpToTeacherRoom();"> 先生の部屋へ </a>
+        </div>
+
         
-        <a id="teacherClick" href="javascript:void(0);id?1" data-role="button" onclick="jumpToTeacherRoom();"> Teacher </a>
         <script>
             function jumpToTeacherRoom(){
+                if($("#teacherPassword").val() == "131719" ){
                     console.log("href attribute:" + $("#teacherClick").attr("href"));
                     $.mobile.changePage("#teacher",{reverse:false,transition:"pop"});
+                }else{
+                    $("#teacherPassword").val("");
+                    alert("パスワードを入力されていないまたはパスワードが間違っています。\n正しく入力してください。")
+                }
             }
         </script>
     </div>
