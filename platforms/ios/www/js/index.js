@@ -188,6 +188,9 @@ $("#exercise").live('pageshow',function(){
                 console.log("playAudio(\"" + results.rows.item(0).exercise_voice + "\");");
                 $("#exRecord").attr("onclick","playAudio(\"" + results.rows.item(0).exercise_voice + "\");");
                 console.log("Exercise record set success.");
+                
+                //open response database, get entries for studentandscoresList
+                openDataBaseAndCreateTable('responseForExercise');
             },
             function(err){
                 console.log("Exercise info get Error: "+err.message + "\nCode="+err.code);
@@ -197,9 +200,6 @@ $("#exercise").live('pageshow',function(){
                 console.log("Exercise info get DB Error: "+err.message + "\nCode="+err.code);
                 alert("Exercise info get DB Error: "+err.message + "\nCode="+err.code);
     });
-    
-    //open response database, get entries for studentandscoresList
-   // openDataBaseAndCreateTable('responseForExercise');
     
 });
 
@@ -536,9 +536,8 @@ function setupTableForLessons(tx){
 //setup Table for ResponseAndMarks
 function setupTableForResponseAndMarks(tx){
     console.log("before execute sql for ResponseAndMarks Database");
-    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmarks(row_id INTEGER,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
+    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
     exercise_id INTEGER,response,scoremark,comment,PRIMARY KEY(row_id))");
-    console.log("Created table if not existed for ResponseAndMarks Database");
 }
 
 //Get from Lessons Database
@@ -563,24 +562,23 @@ function getExerciseEntriesFromLessons(){
 
 //Get response entries of all students for exercise from ResponseAndMarks Database
 function getResponseEntriesForExercise(){
-    console.log("Getting Response entries of all students from Response and \n Score Marks for \
-    teacher " + teacherID +", lesson " + lessonID +" and exercise " + exerciseID);
-    dbShellLessons.transaction(function(tx){
+    console.log("Getting Response entries of all students from Response and \n Score Marks for teacher " + teacherID +", lesson " + lessonID +" and exercise " + exerciseID);
+    dbShellResponsesForExercise.transaction(function(tx){
             tx.executeSql("select row_id,teacher_id,student_id,lesson_id,exercise_id,response,scoremark,comment\
-              from ResponseAndMarks where teacher_id=? and lesson_id=? and exercise_id=? order by student_id",[teacherID,lessonID,exerciseID]
+               from responseandmark where (teacher_id=?) and (lesson_id=?) and (exercise_id=?) order by student_id",[teacherID,lessonID,exerciseID]
             ,renderResponseEntriesForExercise,dberrorhandlerForResponseForExercise);
-    },dberrorhandlerForLessons);
+    },dberrorhandlerForResponseForExercise);
 }
 
 //Get response entries of a student for all exercises from ResponseAndMarks Database
 function getResponseEntriesForStudent(){
     console.log("Getting all exercise response entries for \
     teacher " + teacherID +", lesson " + lessonID +" and student " + studentID);
-    dbShellLessons.transaction(function(tx){
+    dbShellResponsesForStudent.transaction(function(tx){
             tx.executeSql("select row_id,teacher_id,student_id,lesson_id,exercise_id,response,scoremark,comment\
-              from ResponseAndMarks where teacher_id=? and student_id=? order by lesson_id,exercise_id",[teacherID,studentID]
+              from responseandmark where teacher_id=? and student_id=? order by lesson_id,exercise_id",[teacherID,studentID]
             ,renderResponseEntriesForStudent,dberrorhandlerForResponseForStudent);
-    },dberrorhandlerForLessons);
+    },dberrorhandlerForResponseForStudent);
 }
 
 //Get students from StudentProfile Database
@@ -663,7 +661,7 @@ function renderEntriesForExerciseInLessonPage(tx,results){
 function renderResponseEntriesForExercise(tx,results){
     console.log("Rendering response entries of all students for exercise " + exerciseID + " of lesson "+ lessonID + " of teacher " + teacherID);
     if (results.rows.length == 0) {
-        $("#studentAndScoresList").html("<p>この練習はだれも答えてないです。</p>");
+        $("#studentListForEx").html("<p>この練習はだれも答えてないです。</p>");
     } else {
         var s = "<table id='studentAndScores'><tr>";
         console.log("Number of responses from students = " + results.rows.length);
@@ -710,8 +708,8 @@ function renderResponseEntriesForExercise(tx,results){
             });
         }
         s += "</tr></table>";
-        $("#studentAndScoresList").html(s);
-        $("#studentAndScoresList").listview().listview("refresh"); 
+        $("#studentListForEx").html(s);
+        $("#studentListForEx").listview().listview("refresh");
     }
 
 }

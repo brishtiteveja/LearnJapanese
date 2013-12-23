@@ -122,13 +122,13 @@ function onMediaError(error) {
 // Set audio position during recording
 //
 function setRecAudioPosition(position) {
-    $("#audioPositionForRecording").html(position);
+    $(".audioPositionForRecording").html(position);
 }
 
 
 //Set audio position during playing
 function setRecAudioPositionPlay(position){
-    $("#audioPositionForRecordPlay").html(position);
+    $(".audioPositionForRecordPlay").html(position);
 }
 
 
