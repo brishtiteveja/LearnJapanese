@@ -20,58 +20,60 @@
 //DOM-Cache set true because I am using multi html instead of multi page
 //$.mobile.page.prototype.options.domCache = true;
 
-
 //Database Shell
 var dbShellStudents=null;
 //Lessons database
 var dbShellLessons=null;
 
-//Camera
-var pictureSource = null;   // picture source
-var destinationType = null; // sets the format of returned value
-
+//URI
 var imageURIForDBSave = ""; // image path to save in the lessons database
-
-// Audio player
-var my_media = null;
-var mediaTimer = null;
-//mediaRecorder
-var mediaRec = null;
+var audioURIForDBSave = ""; // audio path to save in the lessons database
 
 
 
-//index page load initialization
+
 $("#indexPage").live('pageinit',function(){
             initialize();
 });
 
+//index page load initialization
+$("#indexPage").live('pageshow',function(){
+            initialize();
+});
+
+
 //student page load initialization
-$("#studentLogin").live('pageinit',function(){
+//$("#studentLogin").live('pageinit',function(){
+//            init('student');
+//        }
+//)
+
+$("#studentLogin").live('pageshow',function(){
             init('student');
-        }
-)
+});
 
 var teacherID;
 var lessonID;
 var exerciseID;
 //teacher page load initialization
 $("#teacher").live('pageinit',function(){
-            console.log("Initialize lessons for teacher page.");
-            teacherID = 1;
-            initLesson();
+    teacherID = 1;
+    console.log("Initialize lessons for teacher page.");
+    initLesson();
             
 //            $(document).ready(function(){
 //                $("#backToTeacherFirst").live('click',function(){
-//                    $.mobile.changePage("TeacherLogin.html",{reverse:false});
+//                    $.mobile.changePage("#teacherLogin",{reverse:false,transition:"pop"});
 //                });
 //            });
 });
 
-//initialize lessons for teacher page
-function initLesson(){
-    // Opening Lessons Database
-    openDataBaseAndCreateTable('lessons');
-}
+$("#teacher").live('pageshow',function(){
+    teacherID = 1;
+    console.log("Initialize lessons for teacher page.");
+    initLesson();
+})
+
 
 //    $("#teacher").live("pageshow",function(){
 //        var loc = $(this).data("url");
@@ -83,12 +85,15 @@ function initLesson(){
 //        }
 //    })
 
-
 $("#lesson").live('pageinit',function(){
-    console.log("Teacher id : " + $("#teacherID").val());//
-    teacherID = $("#teacherID").val();
-    
-    var loc = $(this).data("url");
+    //render exercise after opening the database
+    openDataBaseAndCreateTable('lessonPage');
+})
+
+$("#lesson").live('pageshow',function(){
+
+    console.log("Teacher id : " + teacherID);//
+    var loc = $("#lesson").attr("data-url");
     
     if(loc.indexOf("?") >= 0){
         var s = loc.substr(loc.indexOf("?") + 1,loc.length);
@@ -100,17 +105,40 @@ $("#lesson").live('pageinit',function(){
     
     console.log("Teacher ID :" + teacherID);
     console.log("Lesson " + lessonID + " Page initialized. ");
-    
-    //render exercise after opening the database
-    openDataBaseAndCreateTable('lessonPage');
 
+    openDataBaseAndCreateTable('lessonPage');
+});
+
+$("#exercise").live('pageshow',function(){
+    console.log("Teacher id : " + teacherID);//
+    console.log("Lesson id : " + lessonID);
+    var loc = $("#exercise").attr("data-url");
+    
+    if(loc.indexOf("?") >= 0){
+        var s = loc.substr(loc.indexOf("?") + 1,loc.length);
+        exerciseID = s.split("=")[1];
+    }else{
+    
+    }
+    console.log(loc);
+    
+    console.log("Exercise Page " + exerciseID + " in Lesson " + lessonID + "  initialized. ");
 });
 
 
 //new Exercise page load initialization
-$("#newExercisePage").live('pageinit',function(){
+$("#newExercise").live('pageshow',function(){
+                //clear the text fields
+                $("#exerciseTitle").val("");
+                $("#exerciseDetail").val("");
+                
+                
                 console.log("Got lesson ID: " + lessonID);
                 console.log("New Exercise Page");
+                
+                //Setting recording flag as false
+                isRecorded = false;
+                
                 dbShellLessons.transaction(function(tx){
                                     //get new Lesson ID
                                     tx.executeSql(
@@ -169,17 +197,62 @@ $("#newExercisePage").live('pageinit',function(){
                    
 });
 
+        
+//will run after initial show- handles regetting the list
+$("#studentPage").live("pageshow",function(){
+    console.log("hello");
+    getEntries();
+});
+        
+        
+//Student Page logic needs to know to get old Student record (possible)
+$("#student").live("pageshow", function() {
+                //get the location
+                var loc = $("#student").attr("data-url");
+                //location data
+                console.log("Active Page URL:"+loc);
+                
+                if(loc.indexOf("?") >= 0) {
+                    var qs = loc.substr(loc.indexOf("?")+1,loc.length);
+                    console.log("qs :" + qs);
+                    var studentId = qs.split("=")[1];
+                    console.log("studentId:" + studentId);
+                    //load the values
+                    $("#studentFormSubmitButton").attr("disabled","disabled");
+                    dbShellStudents.transaction(
+                                        function(tx) {
+                                                tx.executeSql("select id,name,image from students where id=?",[studentId],function(tx,results) {
+                                                              $("#studentId").val(results.rows.item(0).id);
+                                                              $("#studentName").val(results.rows.item(0).name);
+                                                              $("#studentImage").val(results.rows.item(0).image);
+                                                              $("#studentFormSubmitButton").removeAttr("disabled");   
+                                                              });
+                                                }, dberrorhandler);
+                            
+                } else {
+                    $("#studentFormSubmitButton").removeAttr("disabled");
+                }
+        });
+
+
+//initialize lessons for teacher page
+function initLesson(){
+    // Opening Lessons Database
+    openDataBaseAndCreateTable('lessons');
+}
 
 //handle exercise form submission
-$("#newExerciseForm").live("submit",function(e) {
-            console.log("New exercise form submission.");
-            var data =  {
+//$("#newExerciseForm").live("submit",function(e){
+function onclickFormSubmitNewExercise(){
+
+               console.log("New exercise form submission.");
+                var data =  {
                             t_id        :   teacherID,
                             l_id        :   lessonID,
                             ex_id       :   $("#exerciseID").val(), //blank id perhaps
                             ex_title    :   $("#exerciseTitle").val(),
                             ex_detail   :   $("#exerciseDetail").val(),
-                            ex_voice    :   "",//$("#exerciseVoice").val()
+                            ex_voice    :   audioURIForDBSave,
                             ex_image    :   imageURIForDBSave
                         };
             //console log the student data being registered
@@ -188,14 +261,11 @@ $("#newExerciseForm").live("submit",function(e) {
             //registering the new exercise
            registerExercise(data,function() {
                     $(document).ready(function(){
-                            $.mobile.changePage("Lesson.html?id="+lessonID,{reverse:false});
+                            $.mobile.changePage("#lesson",{reverse:false,transition:"pop"});
                     });
 
             });
-            //Student registration success
-            console.log("Exercise Registered Successfully and page changed to New Lesson Page again.");
-          //  e.preventDefault();
-});
+}
 
 //Registering exercise data in lesson database
 function registerExercise(exercise,cb){
@@ -219,7 +289,7 @@ function registerExercise(exercise,cb){
                     },function(err){
                                 console.log("Exercise Register DB Error: "+err.message + "\nCode="+err.code);
                                 alert("Exercise Register DB Error: "+err.message + "\nCode="+err.code);
-                    }
+                    },cb
         );
     }
 }
@@ -227,9 +297,21 @@ function registerExercise(exercise,cb){
 function determineImageURIForDB(imageURI){
     imageURIForDBSave = imageURI;
     console.log("Image URI variable set.");
+    console.log("Show the image.");
+
+    $("#exerciseImageHolder").css("display","block");
+
+    $("#exerciseImageHolder").attr("src",imageURI);
+        //Show save button
+    $("#saveImage").html("画像を保存する");
+    $("#saveImage").show();
+
 }
 
-
+function determineAudioURIForDB(audioURI){
+    audioURIForDBSave = audioURI;
+    console.log("Audio URI variable set.");
+}
 
 // Application Constructor
 function initialize(){
@@ -279,12 +361,17 @@ function init(who){
         //Opening Student Profile Database first
         openDataBaseAndCreateTable('student'); //********Database load is ok
         console.log("Student page init");
-     
-        //handle form submission of a new/old student
-        $("#studentRegistrationForm").live("submit",function(e) {
+    }
+    else if(who == 'teacher'){
+        
+    }
+}
 
+        //handle form submission of a new/old student
+//$("#studentRegistrationForm").live("submit",function(e) {
+function onFormSubmitStudentRegistration(){
             var data =  {
-                            id   :   $("#studentId").val(), //blank id perhaps
+//                            id   :   $("#studentId").val(), //blank id perhaps
                             name :   $("#studentName").val(),
                             image:   $("#studentImage").val()
                         };
@@ -293,65 +380,31 @@ function init(who){
             //registering the student
             registerStudent(data,function() {
             //callback function change to the next page, currently the same page
-                $.mobile.changePage("StudentLogin.html",{reverse:false});
+                console.log("Student registered.");
+                getEntries();
             });
-            //Student registration success
-            console.log("Student Registered Successfully and page changed.");
             e.preventDefault();
-        });
-        
-        //will run after initial show- handles regetting the list
-        $("#studentPage").live("pageshow",function(){
-                               getEntries();
-                               });
-        
-        
-        //Student Page logic needs to know to get old Student record (possible)
-        $("#student").live("pageshow", function() {
-                //get the location
-                var loc = $(this).data("url");
-                //location data
-                console.log("Active Page URL:"+loc);
-                
-                if(loc.indexOf("?") >= 0) {
-                    var qs = loc.substr(loc.indexOf("?")+1,loc.length);
-                    console.log("qs :" + qs);
-                    var studentId = qs.split("=")[1];
-                    console.log("studentId:" + studentId);
-                    //load the values
-                    $("#studentFormSubmitButton").attr("disabled","disabled");
-                    dbShellStudents.transaction(
-                                        function(tx) {
-                                                tx.executeSql("select id,name,image from students where id=?",[studentId],function(tx,results) {
-                                                              $("#studentId").val(results.rows.item(0).id);
-                                                              $("#studentName").val(results.rows.item(0).name);
-                                                              $("#studentImage").val(results.rows.item(0).image);
-                                                              $("#studentFormSubmitButton").removeAttr("disabled");   
-                                                              });
-                                                }, dberrorhandler);
-                            
-                } else {
-                    $("#studentFormSubmitButton").removeAttr("disabled");
-                }
-        });
-      
-    }
-    else if(who == 'teacher'){
-        
-    }
 }
 
 //registering student
 function registerStudent(student,cb){ //cb for callback
   if(student.name != ""){
     console.log("Student Register Start");
+    console.log("Student ",student.id);
     dbShellStudents.transaction(function(tx) {
-                if(student.id == "")
-                    tx.executeSql("insert into students(name,image) values(?,?)",[student.name,student.image]); //No need to insert student ID, because ID is the Primary Key, so automatically incremented
-                else
+                if(student.id == null){
+                    tx.executeSql("insert into students(name,image) values(?,?)",[student.name,student.image]
+                        ,function(tx,results){
+                            console.log("success.  " + results);
+                        },
+                        dberrorhandler
+                    ); //No need to insert student ID, because ID is the Primary Key, so automatically incremented
+                }
+                else{
                     tx.executeSql("update students set name=?,image=? where id=?",[student.name,student.image,student.id]);
-                    },dberrorhandler,cb);
-    console.log("Student Register End")
+                }
+            },dberrorhandler,cb);
+      
   }else{
       console.log("Can't Register Student. No name.")
       alert("名前を入れてください。");
@@ -405,7 +458,7 @@ function getEntriesFromLessons(){
 function getExerciseEntriesFromLessons(){
     console.log("Getting Exercise Entries for lesson Page " + lessonID);
     dbShellLessons.transaction(function(tx){
-            tx.executeSql("select lessonRow_id INTEGER,teacher_id INTEGER,lesson_id INTEGER,exercise_id INTEGER,exercise_title,exercise_detail,\
+            tx.executeSql("select lessonRow_id,teacher_id,lesson_id,exercise_id,exercise_title,exercise_detail,\
               exercise_voice,exercise_image from lessons where lesson_id=? group by exercise_id",[lessonID]
             ,renderEntriesForExerciseInLessonPage,dberrorhandlerForLessons);
     },dberrorhandlerForLessons);
@@ -424,7 +477,7 @@ function renderEntriesForLessons(tx,results){
                       "<li>"            +
                           "<img height='100' width='100' src='" + results.rows.item(i).exercise_image + "' ><br>"               +
                           "<p>"         +
-                                "<a href='Lesson.html?id=" + results.rows.item(i).lesson_id + "'>" + results.rows.item(i).exercise_title + "</a>" +
+                                "<a href='#lesson?id=" + results.rows.item(i).lesson_id + "'>" + results.rows.item(i).lesson_id + "</a>" +
                           "</p>"        +
                       "</li>"       +
                   "</div>";
@@ -443,12 +496,12 @@ function renderEntriesForExerciseInLessonPage(tx,results){
         var s = "<table id='exercises'><tr>";
         console.log("Number of exercises = " + results.rows.length + "in lesson "+ lessonID);
         for(var i=0; i<results.rows.length; i++) {
-            //console.log("resuts:" + results.rows.item(i).name);
+//            console.log("resuts:" + results.rows.item(i).exercise_id);
             s = s + "<div id ='exercise"+ i +"'>"+
                       "<li>"            +
                           "<img height='100' width='100' src='" + results.rows.item(i).exercise_image + "' ><br>"               +
                           "<p>"         +
-                                "<a href='Exercise.html?id=" + results.rows.item(i).exercise_id + "'>" + results.rows.item(i).exercise_title + "</a>" +
+                                "<a href='#exercise?id=" + results.rows.item(i).exercise_id + "'>" + results.rows.item(i).exercise_title + "</a>" +
                           "</p>"        +
                       "</li>"       +
                   "</div>";
@@ -490,7 +543,7 @@ function renderEntries(tx,results){
         var s = "";
         for(var i=0; i<results.rows.length; i++) {
             //console.log("resuts:" + results.rows.item(i).name);
-            s += "<li><p><a href='student.html?id="+results.rows.item(i).id + "'>" + results.rows.item(i).name + "</a></p></li><br>";
+            s += "<li><p><a href='#student?id="+results.rows.item(i).id + "'>" + results.rows.item(i).name + "</a></p></li><br>";
         }
         $("#studentList").html(s);
         
@@ -507,8 +560,6 @@ function dberrorhandler(err){
 //counting lessons from database
 function countLessonsFromDatabase(tID){
     var lessonNum;
-    
-
     console.log(lessonNum);
 }
 

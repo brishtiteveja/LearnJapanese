@@ -38,12 +38,6 @@
 		5B1594DD16A7569C00FEF299 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B1594DC16A7569C00FEF299 /* AssetsLibrary.framework */; };
 		D4A0D8761607E02300AEF8BB /* Default-568h@2x~iphone.png in Resources */ = {isa = PBXBuildFile; fileRef = D4A0D8751607E02300AEF8BB /* Default-568h@2x~iphone.png */; };
 		E295F8CC9DBB4E98A29C0373 /* CDVSound.m in Sources */ = {isa = PBXBuildFile; fileRef = 67F35E2B42B347F4893B4743 /* CDVSound.m */; };
-		F6040A531854CCDA00DAFAF3 /* TeacherLogin.html in Resources */ = {isa = PBXBuildFile; fileRef = F6040A521854CCDA00DAFAF3 /* TeacherLogin.html */; };
-		F619E2891862B51900FEE7E8 /* Lesson.html in Resources */ = {isa = PBXBuildFile; fileRef = F619E2881862B51900FEE7E8 /* Lesson.html */; };
-		F679BFC8185743E000FCF1D6 /* student.html in Resources */ = {isa = PBXBuildFile; fileRef = F679BFC7185743E000FCF1D6 /* student.html */; };
-		F679BFCB18578DE100FCF1D6 /* Teacher.html in Resources */ = {isa = PBXBuildFile; fileRef = F679BFCA18578DE100FCF1D6 /* Teacher.html */; };
-		F679BFCD1857A16A00FCF1D6 /* NewExercise.html in Resources */ = {isa = PBXBuildFile; fileRef = F679BFCC1857A16A00FCF1D6 /* NewExercise.html */; };
-		F6D689011852350F009352C4 /* StudentLogin.html in Resources */ = {isa = PBXBuildFile; fileRef = F6D689001852350F009352C4 /* StudentLogin.html */; };
 		F840E1F1165FE0F500CFE078 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = F840E1F0165FE0F500CFE078 /* config.xml */; };
 /* End PBXBuildFile section */
 
@@ -107,14 +101,8 @@
 		D4A0D8751607E02300AEF8BB /* Default-568h@2x~iphone.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x~iphone.png"; sourceTree = "<group>"; };
 		DD120D5C73A942FF8D4F8221 /* CDVFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CDVFile.h; path = org.apache.cordova.file/CDVFile.h; sourceTree = "<group>"; };
 		F176CA9167E6469A8CB718FB /* CDVFileTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CDVFileTransfer.m; path = "org.apache.cordova.file-transfer/CDVFileTransfer.m"; sourceTree = "<group>"; };
-		F6040A521854CCDA00DAFAF3 /* TeacherLogin.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = TeacherLogin.html; path = www/TeacherLogin.html; sourceTree = "<group>"; };
 		F619E284186286FA00FEE7E8 /* camera.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = camera.js; path = www/js/camera.js; sourceTree = "<group>"; };
 		F619E2861862887F00FEE7E8 /* media.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = media.js; path = www/js/media.js; sourceTree = "<group>"; };
-		F619E2881862B51900FEE7E8 /* Lesson.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = Lesson.html; path = www/Lesson.html; sourceTree = "<group>"; };
-		F679BFC7185743E000FCF1D6 /* student.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = student.html; path = www/student.html; sourceTree = "<group>"; };
-		F679BFCA18578DE100FCF1D6 /* Teacher.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = Teacher.html; path = www/Teacher.html; sourceTree = "<group>"; };
-		F679BFCC1857A16A00FCF1D6 /* NewExercise.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = NewExercise.html; path = www/NewExercise.html; sourceTree = "<group>"; };
-		F6D689001852350F009352C4 /* StudentLogin.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = StudentLogin.html; path = www/StudentLogin.html; sourceTree = "<group>"; };
 		F840E1F0165FE0F500CFE078 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = config.xml; path = HelloWorld/config.xml; sourceTree = "<group>"; };
 		FC985B23C77542E5BCC67EF4 /* ImageIO.framework */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		FEB2C74C8C2C45A8A41C52DD /* CDVExif.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CDVExif.h; path = org.apache.cordova.camera/CDVExif.h; sourceTree = "<group>"; };
@@ -177,14 +165,8 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
-				F619E2881862B51900FEE7E8 /* Lesson.html */,
 				F619E2861862887F00FEE7E8 /* media.js */,
 				F619E284186286FA00FEE7E8 /* camera.js */,
-				F679BFCC1857A16A00FCF1D6 /* NewExercise.html */,
-				F679BFCA18578DE100FCF1D6 /* Teacher.html */,
-				F679BFC7185743E000FCF1D6 /* student.html */,
-				F6040A521854CCDA00DAFAF3 /* TeacherLogin.html */,
-				F6D689001852350F009352C4 /* StudentLogin.html */,
 				F840E1F0165FE0F500CFE078 /* config.xml */,
 				301BF56E109A69640062928A /* www */,
 				301BF52D109A57CC0062928A /* CordovaLib.xcodeproj */,
@@ -396,12 +378,6 @@
 				3088BBC2154F3926009F9C59 /* Default~iphone.png in Resources */,
 				D4A0D8761607E02300AEF8BB /* Default-568h@2x~iphone.png in Resources */,
 				30FC414916E50CA1004E6F35 /* icon-72@2x.png in Resources */,
-				F6D689011852350F009352C4 /* StudentLogin.html in Resources */,
-				F6040A531854CCDA00DAFAF3 /* TeacherLogin.html in Resources */,
-				F679BFC8185743E000FCF1D6 /* student.html in Resources */,
-				F679BFCB18578DE100FCF1D6 /* Teacher.html in Resources */,
-				F679BFCD1857A16A00FCF1D6 /* NewExercise.html in Resources */,
-				F619E2891862B51900FEE7E8 /* Lesson.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
