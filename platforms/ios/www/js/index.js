@@ -323,8 +323,8 @@ function initLesson(){
 //handle exercise form submission
 //$("#newExerciseForm").live("submit",function(e){
 function onclickFormSubmitNewExercise(){
-
-               console.log("New exercise form submission.");
+            
+            console.log("New exercise form submission.");
                 var data =  {
                             t_id        :   teacherID,
                             l_id        :   lessonID,
@@ -349,7 +349,7 @@ function onclickFormSubmitNewExercise(){
 
 //handle response form submission
 function onclickSubmitNewResponse(){
-            console.log("New exercise form submission.");
+            console.log("New response submission.");
                 var data =  {
                             t_id        :   teacherID,
                             s_id        :   studentID,
@@ -365,7 +365,7 @@ function onclickSubmitNewResponse(){
            registerResponse(data,function() {
                     $(document).ready(function(){
                            // $.mobile.changePage("#exercise",{reverse:false,transition:"pop"});
-                           location.reload();
+                          openDataBaseAndCreateTable('responseForExercise');
                     });
 
             });
@@ -380,12 +380,33 @@ function registerResponse(resp,cb)
                     function(tx){
 //                    "CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
 //    exercise_id INTEGER,response,scoremark,comment,PRIMARY KEY(row_id))"
-                        tx.executeSql("insert into responseandmark(teacher_id,student_id,lesson_id,exercise_id,response) \
-                                        values(?,?,?,?,?)",
-                            [resp.t_id, resp.s_id,resp.l_id, resp.ex_id, resp.response],
+                        tx.executeSql("select response from responseandmark where student_id=?",
+                            [resp.student_id],
                             function(tx,results){
-                                    console.log("Response data registered in the responseandmark table in database.");
-                            },
+                                    if(results.rows.length == 0){
+                                        tx.executeSql( "insert into responseandmark(teacher_id,student_id,lesson_id,exercise_id,response) \
+                                                        values(?,?,?,?,?)",
+                                                       [resp.teacher_id,resp.student_id,resp.lesson_id,resp.exercise_id,resp.response],
+                                                      function(tx,results){
+                                                            console.log("Response data registered(no update) for student in the responseandmark table in database.");
+                                                      },
+                                                      function(err){
+                                                            console.log("Response register(no update) Error: "+err.message + "\nCode="+err.code);
+                                                            alert("Response register(no update) Error: "+err.message + "\nCode="+err.code);
+                                                      }
+                                        );
+                                    }else{
+                                        tx.executeSql("update responseandmark set response=? where student_id=?",[resp.response,resp.student_id],
+                                                        function(tx,results){
+                                                            console.log("Response data registered(update) for student in the responseandmark table in database.");
+                                                        },
+                                                        function(err){
+                                                            console.log("Response register(update) Error: "+err.message + "\nCode="+err.code);
+                                                            alert("Response register(update) Error: "+err.message + "\nCode="+err.code);
+                                                        }
+                                        );
+                                    }
+                                },
                             function(err){
                                 console.log("Response register Error: "+err.message + "\nCode="+err.code);
                                 alert("Response register Error: "+err.message + "\nCode="+err.code);
@@ -426,7 +447,7 @@ function registerExercise(exercise,cb){
                     },cb
         );
     }
-}
+	}
 
 function determineImageURIForDB(imageURI){
     imageURIForDBSave = imageURI;
@@ -498,7 +519,7 @@ function onFormSubmitStudentRegistration(){
             var data =  {
 //                            id   :   $("#studentId").val(), //blank id perhaps
                             name :   $("#studentName").val(),
-                            image:   $("#studentImage").val()
+                            image:   imageURIForDBSave
                         };
             //console log the student data being registered
             console.log(data);
@@ -592,8 +613,8 @@ function setupTableForLessons(tx){
 //setup Table for ResponseAndMarks
 function setupTableForResponseAndMarks(tx){
     console.log("before execute sql for ResponseAndMarks Database");
-    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
-    exercise_id INTEGER,response,scoremark,comment,PRIMARY KEY(row_id))");
+    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER PRIMARY KEY,teacher_id,student_id,lesson_id,\
+    exercise_id,response,scoremark,comment)");
 }
 
 //Get from Lessons Database
@@ -620,8 +641,8 @@ function getExerciseEntriesFromLessons(){
 function getResponseEntriesForExercise(){
     console.log("Getting Response entries of all students from Response and \n Score Marks for teacher " + teacherID +", lesson " + lessonID +" and exercise " + exerciseID);
     dbShellResponsesForExercise.transaction(function(tx){
-            tx.executeSql("select row_id,teacher_id,student_id,lesson_id,exercise_id,response,scoremark,comment\
-               from responseandmark where (teacher_id=?) and (lesson_id=?) and (exercise_id=?) order by student_id",[teacherID,lessonID,exerciseID]
+            tx.executeSql("select teacher_id,student_id,lesson_id,exercise_id,response\
+               from responseandmark where teacher_id=? and lesson_id=? and exercise_id=?",[teacherID,lessonID,exerciseID]
             ,renderResponseEntriesForExercise,dberrorhandlerForResponseForExercise);
     },dberrorhandlerForResponseForExercise);
 }
@@ -716,58 +737,69 @@ function renderEntriesForExerciseInLessonPage(tx,results){
 //render responses for an exercise
 function renderResponseEntriesForExercise(tx,results){
     console.log("Rendering response entries of all students for exercise " + exerciseID + " of lesson "+ lessonID + " of teacher " + teacherID);
-//    if (results.rows.length == 0) {
-//        $("#studentListForEx").html("<p>この練習はだれも答えてないです。</p>");
-//    } else {
-//        var s = "<table id='studentAndScores'><tr>";
-//        console.log("Number of responses from students = " + results.rows.length);
-//        
-//        for(var i=0; i<results.rows.length; i++) {
-//            //getting student info
-//            var student_ID = results.rows.item(i).student_id;
-//            var studentImageURI;
-//            var studentName;
-//            
-//            //open student database
-//            var dbShellStudents = window.openDatabase("StudentProfile",2,"StudentProfile",1000000);
-//            //get info from StudentProfile database for student_id
-//            dbShellStudents.transaction(function(tx1) {
-//                tx1.executeSql("select id,name,image from students where id=?",[student_ID],
-//                        function(tx2,res){
-//                            //studentID is unique
-//                            studentImageURI = res.rows.item(0).image;
-//                            studentName = res.rows.item(0).name;
-//                            
-//                            //show student image, student name and score mark
-//                            s = s +
-//                             "<div id ='exercise"+ i +"'>"+
-//                                "<li>"            +
-//                                    "<img height='40' width='40' src='" + studentImageURI + "' ><br>"               +
-//                                    "<p>"         +
-//                                        "<a href='#response?studentId=" + student_ID + "'> 学生名:" + studentName + "</a>" +
-//                                    "</p><br>";
-//                               
+    if (results.rows.length == 0) {
+        console.log("No row found for the query in responseandmark table");
+        $("#studentListForEx").html("<p>この練習はだれも答えてないです。</p>");
+    } else {
+        var s = "<table id='studentAndScores'><tr>";
+        console.log("Number of responses from students = " + results.rows.length);
+        
+        var dbShellStudents = window.openDatabase("StudentProfile",2,"StudentProfile",1000000);
+        
+            //open student database
+            //get info from StudentProfile database for student_id
+        dbShellStudents.transaction(function(tx) {
+            for(var i=0; i<results.rows.length; i++) {
+                //getting student info
+                var student_ID = results.rows.item(i).student_id;
+                var studentImageURI;
+                var studentName;
+                tx.executeSql("select id,name,image from students where id=?",[student_ID],
+                        function(tx1,res){
+                            //studentID is unique
+                            studentImageURI = res.rows.item(0).image;
+                            studentName = res.rows.item(0).name;
+                            
+                            console.log(studentImageURI + "\n" + studentName);
+                            
+                            //
+                            //show student image, student name and score mark
+                            s = s +
+                             "<div id ='responseFromStudent?id=" + i + "'>"+
+                                "<li>"            +
+                                    "<img height='40' width='40' src=\"" + studentImageURI + "\" ><br>"               +
+                                    "<p>"         +
+                                        "<a href='#response?studentID=" + student_ID + "'> 学生名:" + studentName + "</a>" +
+                                    "</p><br>";
+//
 //                            if(results.rows.item(i).scoremark != null){
 //                                    s += "<p> スコアー:" + results.rows.item(i).scoremark + "</p>";
 //                            }else{
 //                                    s += "";
 //                            }
-//                            s +="</li>"+"</div>";
-//                        },
-//                        function(err){
-//                            console.log("Student info get Error: "+err.message + "\nCode="+err.code);
-//                            alert("Student info get Error: "+err.message + "\nCode="+err.code);
-//                        });
-//            }, function(err){
-//                console.log("Student info get DB Error: "+err.message + "\nCode="+err.code);
-//                alert("Student info get DB Error: "+err.message + "\nCode="+err.code);
-//            });
-//        }
-//        s += "</tr></table>";
-//        $("#studentListForEx").html(s);
-//        $("#studentListForEx").listview().listview("refresh");
-//    }
-//
+                            s +="</li>"+"</div>";
+
+                        },
+                        function(err){
+                            console.log("Student info get Error: "+err.message + "\nCode="+err.code);
+                            alert("Student info get Error: "+err.message + "\nCode="+err.code);
+                        }
+                 );
+            }
+
+            
+        },function(err){
+                            console.log("Student info get DB Error: "+err.message + "\nCode="+err.code);
+                            alert("Student info get DB Error: "+err.message + "\nCode="+err.code);
+        },//callback function from here
+         function(){
+            console.log("After loading all the responses for this exercise.");
+            s += "</tr></table>";
+            $("#studentListForEx").html(s);
+            $("#studentListForEx").listview().listview("refresh");
+        });
+     }
+
 }
 
 //render responses for a student

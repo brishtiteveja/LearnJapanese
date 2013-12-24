@@ -239,6 +239,7 @@ function resOnErrorForRecording(error){
 
 function stopRecord(){
     mediaRec.stopRecord();
+    
     moveAndsaveRecordToDB();
     //clear the interval
     clearInterval(recInterval);
