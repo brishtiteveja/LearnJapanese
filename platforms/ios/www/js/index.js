@@ -164,6 +164,10 @@ $("#lesson").live('pageshow',function(){
 
 //response page show
 $("#response").live('pageshow',function(){
+    //initially clear score and comments
+    $("#scoremarkHolder").html("");
+    $("#commentHolder").html("");
+    
     var loc = $("#response").attr("data-url");
     console.log(loc);
     var tmpstudentName;
