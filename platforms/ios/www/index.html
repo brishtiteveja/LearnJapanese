@@ -210,15 +210,31 @@
         
         <div data-role="fieldcontain">
             <label class="lbl" for="studentListForEx">練習をやった学生一覧</label> </br>
-        </div>
-        <div id="studentListForEx">
+            <div id="studentListForEx">
                 
+            </div>
         </div>
         
-
         <script>
+                function clearDataHolders(){
+                    //clear
+                    $(".audioPositionForRecording").html("");
+                    //clear
+                    $(".audioPositionForRecordPlay").html("");
+                    //clear up data
+                    $("#exerciseImageHolder").css("display","none");
+                    $("#exerciseImageHolder").attr("src","");
+                    //Show save button
+                    $("#saveImage").html("");
+                    $("#saveImage").hide();
+                    
+                    //clearing the list
+                    $("#studentListForEx").html("");
+                        
+                }
                 $(document).ready(function(){
                     $("#backToLesson").click(function(){
+                            clearDataHolders();
                             exerciseID = null;
                             console.log("Back to lesson button pressed.");
                             $.mobile.changePage("#lesson",{reverse:false,transition:"pop"});
@@ -227,18 +243,8 @@
 
                 $(document).ready(function() {
                     $("#newResponseSubmitButton").click(function(){
-                        stopRecord();
-                         //clear
-                        $(".audioPositionForRecording").html("");
-                         //clear
-                        $(".audioPositionForRecordPlay").html("");
-                        //clear up data
-                        $("#exerciseImageHolder").css("display","none");
-                        $("#exerciseImageHolder").attr("src","");
-                        //Show save button
-                        $("#saveImage").html("");
-                        $("#saveImage").hide();
-                        
+                        clearDataHolders();
+                        mediaRec.stopRecord();
                         //$.mobile.changePage("#response",{reverse:false,transition:"pop"});　// Will not go to the response page
                        onclickSubmitNewResponse();
                     });
@@ -560,7 +566,9 @@
                     <input type="button" data-inline="true" id="studentFormSubmitButton" value="GO!">
                 </div>
             </form>
-            <div id="studentList">
+            <div data-role="fieldcontain">
+                <div id="studentList">
+                </div>
             </div>
             
             <script>
