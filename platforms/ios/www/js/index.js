@@ -74,6 +74,7 @@ $("#teacherLogin").live('pageshow',function(){
 
 //teacher page load initialization
 $("#teacher").live('pageinit',function(){
+    //hide new lesson button if student
     if(isStudent){
         $(".teacherOnly").hide();
         $(".studentOnly").show();
@@ -105,19 +106,7 @@ $("#teacher").live('pageshow',function(){
 })
 
 
-//    $("#teacher").live("pageshow",function(){
-//        var loc = $(this).data("url");
-//        console.log("Teacher page url : " + loc);
-//        if(loc.indexOf("?") >= 0){
-//            var qs = loc.substr(loc.indexOf("?")+1,loc.length);
-//            var teacherID = qs.split("=")[1];
-//            console.log("Teacher ID: " + teacherID);
-//        }
-//    })
-
 $("#lesson").live('pageinit',function(){
-    //render exercise after opening the database
-    
     //hide new exercise button
     if(isStudent){
         $(".teacherOnly").hide();
@@ -127,17 +116,41 @@ $("#lesson").live('pageinit',function(){
         $(".teacherOnly").show();
         $(".studentOnly").hide();
     }
-    openDataBaseAndCreateTable('lessonPage');
-})
-
-$("#lesson").live('pageshow',function(){
-
     console.log("Teacher id : " + teacherID);//
     var loc = $("#lesson").attr("data-url");
     
     if(loc.indexOf("?") >= 0){
         var s = loc.substr(loc.indexOf("?") + 1,loc.length);
         lessonID = s.split("=")[1];
+        $("#lessonHeader").html("レッスン　" + lessonID);
+    }else{
+    
+    }
+    console.log(loc);
+    
+    console.log("Teacher ID :" + teacherID);
+    console.log("Lesson " + lessonID + " Page initialized. ");
+
+    openDataBaseAndCreateTable('lessonPage');
+})
+
+$("#lesson").live('pageshow',function(){
+    //hide new exercise button
+    if(isStudent){
+        $(".teacherOnly").hide();
+        $(".studentOnly").show();
+    }
+    if(isTeacher){
+        $(".teacherOnly").show();
+        $(".studentOnly").hide();
+    }
+    console.log("Teacher id : " + teacherID);//
+    var loc = $("#lesson").attr("data-url");
+    
+    if(loc.indexOf("?") >= 0){
+        var s = loc.substr(loc.indexOf("?") + 1,loc.length);
+        lessonID = s.split("=")[1];
+        $("#lessonHeader").html("レッスン　" + lessonID);
     }else{
     
     }
@@ -149,6 +162,64 @@ $("#lesson").live('pageshow',function(){
     openDataBaseAndCreateTable('lessonPage');
 });
 
+//response page show
+$("#response").live('pageshow',function(){
+    var loc = $("#response").attr("data-url");
+    console.log(loc);
+    var tmpstudentName;
+    var tmpstudentImageURI;
+    var tmpaudioResponseURI;
+    
+    if(loc.indexOf("?") >= 0){
+        var s = loc.substr(loc.indexOf("?") + 1,loc.length);
+        studentID = s.split("=")[1];
+        studentID = studentID.split("&")[0];
+        tmpstudentName = s.split("=")[2];
+        tmpstudentName = tmpstudentName.split("&")[0];
+
+        console.log("Response of student " + studentID + " and name = " + tmpstudentName + " for exercise " + exerciseID + " and lesson " + lessonID);
+        console.log(tmpstudentImageURI);
+        console.log(tmpaudioResponseURI);
+        
+        $("#studentNameInResponse").html(tmpstudentName);
+        
+        dbShellResponsesForExercise.transaction(
+          function(tx){
+                tx.executeSql("select response,scoremark,comment from responseandmark where teacher_id=? and student_id=? and lesson_id=? and exercise_id=?",
+                    [teacherID,studentID,lessonID,exerciseID],
+                    function(tx,results){
+                        var item = results.rows.item(0);
+                        tmpaudioResponseURI = item.response;
+//                        tmpaudioResponseURI = "\""+tmpaudioResponseURI + "\"";
+                        audioURIForDBSave = tmpaudioResponseURI;
+                        if(item.scoremark != null){
+                            $("#scoremarkHolder").html("スコアー   :" + item.scoremark);
+                        }
+                        
+                        if(item.comment != null){
+                         $("#commentHolder").html("先生のコメント :" + item.comment);
+                        }
+                    },
+                    function(err){
+                        console.log("Response page response get tx Error: "+err.message + "\nCode="+err.code);
+                        alert("Response page response get  tx Error: "+err.message + "\nCode="+err.code);
+                    }
+                )
+                ,function(err){
+                    console.log("Response page response get DB Error: "+err.message + "\nCode="+err.code);
+                    alert("Response page response get DB Error: "+err.message + "\nCode="+err.code);
+            },
+            function(){
+                
+            }
+         });
+        
+     }else{
+        console.log("Couldn't get student id and student name.")
+    }
+   
+   
+})
 
 
 //new Exercise page load initialization
@@ -268,7 +339,8 @@ $("#exercise").live('pageshow',function(){
         var s = loc.substr(loc.indexOf("?") + 1,loc.length);
         exerciseID = s.split("=")[1];
     }else{
-        alert("Something is wrong in the exercise page.")
+        console.log(exerciseID);
+        //alert("Something is wrong in the exercise page.")
     }
     console.log(loc);
     
@@ -348,27 +420,55 @@ function onclickFormSubmitNewExercise(){
 
 
 //handle response form submission
-function onclickSubmitNewResponse(){
-            console.log("New response submission.");
-            var data =  {
+function onclickFormSubmitNewResponse(){
+        var data =  {
+                    teacher_id        :   teacherID,
+                    student_id        :   studentID,
+                    lesson_id         :   lessonID,
+                    exercise_id       :   exerciseID, //blank id perhaps
+                    response          :   audioURIForDBSave
+        };
+        //console log the student data being registered
+        console.log(data);
+    
+        //updating the response with teacher score and comment
+        registerResponse(data,function() {
+            $(document).ready(function(){
+                console.log("updating the response with teacher score and comment");
+                    // $.mobile.changePage("#exercise",{reverse:false,transition:"pop"});
+                    openDataBaseAndCreateTable('responseForExercise');
+                });
+        });
+}
+
+function onclickFormSubmitNewScoreComment(){
+            var score = $("#scoremark").val();
+            var com = $("#comment").val();
+            if(score != "" && comment != "" ){
+                console.log("score submitted");
+                console.log("New response submission.");
+                var data =  {
                             teacher_id        :   teacherID,
                             student_id        :   studentID,
-                            lesson_id        :   lessonID,
+                            lesson_id         :   lessonID,
                             exercise_id       :   exerciseID, //blank id perhaps
-                            response    :   audioURIForDBSave
+                            response          :   audioURIForDBSave,
+                            scoremark         :   score,
+                            comment           :   com
                         };
-            //console log the student data being registered
-            console.log(data);
+                //console log the student data being registered
+                console.log(data);
     
-            //registering the new response
-                        //registering the new exercise
-           registerResponse(data,function() {
+                //updating the response with teacher score and comment
+                registerResponse(data,function() {
                     $(document).ready(function(){
+                        console.log("updating the response with teacher score and comment");
                            // $.mobile.changePage("#exercise",{reverse:false,transition:"pop"});
                           openDataBaseAndCreateTable('responseForExercise');
                     });
 
-            });
+                });
+            }
 }
 
 //Registering the response in responseAndMarks database
@@ -377,7 +477,7 @@ function registerResponse(resp,cb){
            console.log("Response registration Start");
            dbShellResponsesForExercise.transaction(
                     function(tx){
-//                        console.log(resp.teacher_id + "  "+ resp.student_id + "  " + resp.lesson_id + "  " + resp.exercise_id + " " + resp.response);
+//                     console.log(resp.teacher_id + "  "+ resp.student_id + "  " + resp.lesson_id + "  " + resp.exercise_id + " " + resp.response);
 //                    "CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
 //    exercise_id INTEGER,response,scoremark,comment,PRIMARY KEY(row_id))"
                         tx.executeSql("select response from responseandmark where teacher_id=? and student_id=? and lesson_id=? and exercise_id=?",
@@ -396,7 +496,11 @@ function registerResponse(resp,cb){
                                                       }
                                         );
                                     }else{
-                                        tx1.executeSql("update responseandmark set response=? where teacher_id=? and student_id=? and lesson_id=? and exercise_id=?",
+                                        console.log("scoremark = " + resp.scoremark + "comment = " + resp.comment);
+
+                                      
+                                        if(resp.scoremark == null && resp.comment == null){
+                                            tx1.executeSql("update responseandmark set response=? where teacher_id=? and student_id=? and lesson_id=? and exercise_id=?",
                                                     [resp.response,resp.teacher_id,resp.student_id,resp.lesson_id,resp.exercise_id],
                                                         function(tx3,res3){
                                                             console.log("Response data registered(update) for student in the responseandmark table in database.");
@@ -405,7 +509,22 @@ function registerResponse(resp,cb){
                                                             console.log("Response register(update) Error: "+err.message + "\nCode="+err.code);
                                                             alert("Response register(update) Error: "+err.message + "\nCode="+err.code);
                                                         }
-                                        );
+                                            );                                      
+                                        }else{
+                                            tx1.executeSql("update responseandmark set response=?,scoremark=?,comment=? where teacher_id=? and student_id=? and lesson_id=? and exercise_id=?",
+                                                    [resp.response,resp.scoremark,resp.comment,resp.teacher_id,resp.student_id,resp.lesson_id,resp.exercise_id],
+                                                        function(tx3,res3){
+                                                            console.log("Response data registered(update with score,comment) for student in the responseandmark table in database.");
+                                                            $("#scoremarkHolder").html("スコアー: " + resp.scoremark);
+                                                            $("#commentHolder").html("先生のコメント: " + resp.comment);
+                                                        },
+                                                        function(err){
+                                                            console.log("Response register(update with score,comment) Error: "+err.message + "\nCode="+err.code);
+                                                            alert("Response register(update with score,comment) Error: "+err.message + "\nCode="+err.code);
+                                                        }
+                                            );
+                                        }
+ 
                                     }
                                 },
                             function(err){
@@ -615,8 +734,8 @@ function setupTableForLessons(tx){
 //setup Table for ResponseAndMarks
 function setupTableForResponseAndMarks(tx){
     console.log("before execute sql for ResponseAndMarks Database");
-    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER PRIMARY KEY,teacher_id,student_id,lesson_id,\
-    exercise_id,response,scoremark,comment)");
+    tx.executeSql("CREATE TABLE IF NOT EXISTS responseandmark(row_id INTEGER PRIMARY KEY,teacher_id INTEGER,student_id INTEGER,lesson_id INTEGER,\
+    exercise_id INTEGER,response,scoremark INTEGER,comment)");
 }
 
 //Get from Lessons Database
@@ -678,7 +797,9 @@ function renderEntries(tx,results){
         var s = "";
         for(var i=0; i<results.rows.length; i++) {
             //console.log("resuts:" + results.rows.item(i).name);
-            s += "<li><p><a href='#student?id="+results.rows.item(i).id + "'>" + results.rows.item(i).name + "</a></p></li><br>";
+            s += "<li id='studentListInsideDiv'><p><a href='#student?id="+results.rows.item(i).id + "' style='width:200;'>" +
+            "<img height='100' width='100' src='" + results.rows.item(i).image + "' > <br>"+ results.rows.item(i).name 
+            "</a></p></li>";
         }
         $("#studentList").html(s);
         
@@ -700,7 +821,7 @@ function renderEntriesForLessons(tx,results){
                       "<li>"            +
                           "<img height='100' width='100' src='" + results.rows.item(i).exercise_image + "' ><br>"               +
                           "<p>"         +
-                                "<a href='#lesson?id=" + results.rows.item(i).lesson_id + "'>" + results.rows.item(i).lesson_id + "</a>" +
+                                "<a href='#lesson?id=" + results.rows.item(i).lesson_id + "'>レッスン " + results.rows.item(i).lesson_id + "</a>" +
                           "</p>"        +
                       "</li>"       +
                   "</div>";
@@ -760,13 +881,16 @@ function renderResponseEntriesForExercise(tx,results){
                                     for(var i=0; i<results.rows.length; i++) {
                                         //getting student info
                                         var student_ID = results.rows.item(i).student_id;
-                                
+                                        var responseURI = results.rows.item(i).response;
+                                        var scoreMark;
+                                        if(results.rows.item(i).scoreMark == null)
+                                            scoreMark = -1;
                                         var studentImageURI;
                                         var studentName;
                                 
                                         var item = results.rows.item(i);
                                         console.log("i="+i+"id=" + student_ID); //+ "name=" + studentName);
-                                        (function(student_ID){
+                                        (function(student_ID,scoreMark){
                                             tx.executeSql("select id,name,image from students where id=?",[student_ID],
                                                 function(tx,res){
                                                     //studentID is unique
@@ -778,14 +902,13 @@ function renderResponseEntriesForExercise(tx,results){
                                                     "<div id ='responseFromStudent?id=" + i + "'>"+
                                                         "<li>"            +
                                                         "<img height='40' width='40' src=\"" + studentImageURI + "\" ><br>"               +
-                                                        "<p>"         +
-                                                        //
-//                                              if(results.rows.item(i).scoremark != null){
-//                                                     s += "<p> スコアー:" + results.rows.item(i).scoremark + "</p>";
-//                                              }else{
-//                                                      s += "";
-//                                              }
-                                                        "<a href='#response?studentID=" + student_ID + "'> 学生名:" + studentName + "</a>" +
+                                                        "<p>";
+                                                        
+                                                        if(scoreMark != -1){
+                                                            s += "<p> スコアー:" + scoreMark + "</p>";
+                                                        }
+                                                        
+                                                    s +="<a href='#response?studentID=" + student_ID + "&studentName=" + studentName +"'> 学生名:" + studentName + "</a>" +
                                                         "</p><br>";
 
                                                     s +="</li>"+"</div>";
@@ -797,7 +920,7 @@ function renderResponseEntriesForExercise(tx,results){
                                                 }
                                             );
 
-                                        })(student_ID);
+                                        })(student_ID,scoreMark);
                                     }//end for
                                 }
                                 ,dberrorhandler,

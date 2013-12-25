@@ -47,7 +47,7 @@ function playAudio(src) {
 }
 
 function setAudioPosition(position){
-
+    $(".audioPositionForPlaying").html(position);
 }
 
 //play the recorded Audio

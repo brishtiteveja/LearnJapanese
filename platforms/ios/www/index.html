@@ -89,67 +89,69 @@
         </div>
        </div>
     
-    
     <!-- Lesson Page starts from here -->
     <div id="lesson" data-role="page">
-        	<div class="teacherOnly" data-role="header">
-                <h1>レッスン</h1>
+        <div data-role="header">
+            <h1 id="lessonHeader"></h1>
+        </div>
+        
+        <div data-role="fieldcontain">
+            <div data-role="fieldcontain">
+                <button type="button" data-inline="true" onclick="location.href='index.html';" >ホーム</button>
             </div>
-        <div data-role="fieldcontain">
-            <button type="button" data-inline="true" onclick="location.href='index.html';" >ホーム</button>
-        </div>
-        <div data-role="fieldcontain" class="teacherOnly" >
-            <input type="button" data-inline="true" data-inline="true" id="senseiNoHeyaButton" name="senseiNoHeyaButton" value="先生の部屋へ" >
-        </div>
-        <div data-role="fieldcontain" class="studentOnly">
-            <input type="button" data-inline="true"  id="gakuseiNoHeyaButton" name="gakuseiNoHeyaButton" value="学生の部屋へ" >
-        </div>
-        <div data-role="fieldcontain" class="studentOnly">
-            <input type="button" data-inline="true"  id="toLesson" name="toLesson" value="レッスンページへもどる" >
-        </div>
+            <div data-role="fieldcontain" class="teacherOnly" >
+                <input type="button" data-inline="true" data-inline="true" id="senseiNoHeyaButton" name="senseiNoHeyaButton" value="先生の部屋へ" >
+            </div>
+            <div data-role="fieldcontain" class="studentOnly">
+                <input type="button" data-inline="true"  id="gakuseiNoHeyaButton" name="gakuseiNoHeyaButton" value="学生の部屋へ" >
+            </div>
+            <div data-role="fieldcontain" class="studentOnly">
+                <input type="button" data-inline="true"  id="toLesson" name="toLesson" value="レッスンページへもどる" >
+            </div>
         
-        <div data-role="fieldcontain" class="teacherOnly">
-            <label class="lbl" for="newExerciseButton">新しい練習</label>
-            <a  id="newExerciseButton" href="#newExercise" data-role="button" data-inline="true" data-icon="plus">+</a>
-        </div>
+            <div data-role="fieldcontain" class="teacherOnly">
+                <label class="lbl" for="newExerciseButton">新しい練習</label>
+                <a  id="newExerciseButton" href="#newExercise" data-role="button" data-inline="true" data-icon="plus">+</a>
+            </div>
         
-        <div data-role="fieldcontain">
-            <label class="lbl" for="exerciseList">練習一覧</label> </br>
-            <div id="exerciseList">
+            <div data-role="fieldcontain">
+                <label class="lbl" for="exerciseList">練習一覧</label> </br>
+                <div id="exerciseList">
                 
+                </div>
             </div>
+            <script>
+                //handling new Exercise button click
+                $(document).ready(function(){
+                    $("#newExerciseButton").live('click',function(){
+                        $.mobile.changePage("#newExercise",{reverse:false,transition:"flip"});
+                    });
+                });
+            
+                //handling senseiNoHeya button click
+                $(document).ready(function(){
+                    $("#senseiNoHeyaButton").live('click',function(){
+                        lessonID = null;
+                        $.mobile.changePage("#teacher",{reverse:false,transition:"pop"});
+                    });
+                });
+            
+            
+                //still work needed
+                $(document).ready(function(){
+                    $("#gakuseiNoHeyaButton").live('click',function(){
+                        $.mobile.changePage("#student",{reverse:false,transition:"pop"});
+                    });
+                });
+            
+                $(document).ready(function(){
+                    $("#toLesson").live('click',function(){
+                        $.mobile.changePage("#teacher",{reverse:false,transition:"pop"});
+                    });
+                });
+            </script>
         </div>
-        <script>
-            //handling new Exercise button click
-            $(document).ready(function(){
-                $("#newExerciseButton").live('click',function(){
-                    $.mobile.changePage("#newExercise",{reverse:false,transition:"flip"});
-                });
-            });
-            
-            //handling senseiNoHeya button click
-            $(document).ready(function(){
-                $("#senseiNoHeyaButton").live('click',function(){
-                    lessonID = null;
-                    $.mobile.changePage("#teacher",{reverse:false,transition:"pop"});
-                });
-            });
-            
-            
-            //still work needed
-            $(document).ready(function(){
-                $("#gakuseiNoHeyaButton").live('click',function(){
-                    $.mobile.changePage("#student",{reverse:false,transition:"pop"});
-                });
-            });
-            
-            $(document).ready(function(){
-                $("#toLesson").live('click',function(){
-                    $.mobile.changePage("#teacher",{reverse:false,transition:"pop"});
-                });
-            });
-        </script>
-      </div>
+    </div>
       
     <!-- Individual Exercise Page -->
     <div id="exercise" data-role="page" >
@@ -234,6 +236,8 @@
                 }
                 $(document).ready(function(){
                     $("#backToLesson").click(function(){
+                            stopAudio();
+                            stopRecord();
                             clearDataHolders();
                             exerciseID = null;
                             console.log("Back to lesson button pressed.");
@@ -243,10 +247,12 @@
 
                 $(document).ready(function() {
                     $("#newResponseSubmitButton").click(function(){
+                        stopAudio();
+                        stopRecord();
                         clearDataHolders();
                         mediaRec.stopRecord();
                         //$.mobile.changePage("#response",{reverse:false,transition:"pop"});　// Will not go to the response page
-                       onclickSubmitNewResponse();
+                       onclickFormSubmitNewResponse();
                     });
                 });
         </script>
@@ -263,7 +269,7 @@
                 <button type="button" data-inline="true" onclick="location.href='index.html';">ホーム</button>
             </div>
             <div data-role="fieldcontain">
-                <input type="button" id="backToExercise" name="backToExercise" value="練習へもどる">
+                <input type="button" id="backToExercise" name="backToExercise" value="練習へもどる" data-inline="true">
             </div>
             
             <div data-role="fieldcontain">
@@ -273,10 +279,17 @@
                 <h1 id="studentNameInResponse"> <h1>
             </div>
             <div data-role="fieldcontain">
-				<label class="lbl" for="responseVoice"></label>
-                <a id="responseVoice" class="voice" onclick="playRecordedAudio();" data-role="button" data-inline="true" name="responseVoice">この練習の答え</a>
-                <p class="audioPositionForRecordPlay"></p>
-			</div>
+                <input type="button" id="responseVoiceButton" name="responseVoiceButton" value="学生の答え" data-inline="true">
+            </div>
+            <div data-role="fieldcontain">
+                <p class="audioPositionForPlaying"></p>
+            </div>
+             <div data-role="fieldcontain">
+                <h1 class="lbl" id="scoremarkHolder" name="scoremarkHolder"> </h1>
+            </div>
+            <div data-role="fieldcontain">
+                <h1 class="lbl" id="commentHolder" name="commentHolder"> </h1>
+            </div>
             
             <div id="teacherScoreComment" class="teacherOnly">
              <form id="scoringForm" method="post">
@@ -288,37 +301,45 @@
                     <label class="lbl" for="comment">コメント</label>
                     <input type="text" id="comment" name="comment">
                 </div>
-                <div data-role="fieldcontain">
+                <div data-role="fieldcontain" class="teacherOnly">
                     <input type="button" data-inline="true" data-theme="b" id="scoringFormSubmitButton" value="OK">
                 </div>
              </form>
             </div>
-            
-
-          <script>
-                $(document).ready(function(){
-                    $("#backToExercise").click(function(){
-                            console.log("Back to exercise button pressed.");
-                            $.mobile.changePage("#exercise",{reverse:false,transition:"pop"});
-                    });
-                });
-              
-              
-              //insert the score and comment of sensei
-                $(document).ready(function() {
-                    $("#scoringFormSubmitButton").click(function(){
-                            console.log("score submitted");
+            <script>
+                function clearDataForScore(){
 //                            $("#exerciseImageHolder").css("display","none");
 //                            $("#exerciseImageHolder").attr("src","");
 //                            //Show save button
 //                            $("#saveImage").html("");
 //                            $("#saveImage").hide();
-//                            
-//                        $.mobile.changePage("#lesson",{reverse:false,transition:"pop"});
-//                        onclickFormSubmitNewExercise();
-//                    });
+                    $(".audioPositionForPlaying").html("");
+                }
+
+                $(document).ready(function(){
+                    $("#responseVoiceButton").click(function(){
+                        console.log(audioURIForDBSave);
+                        playAudio(audioURIForDBSave);
+                    });
                 });
-          </script>
+                
+                $(document).ready(function(){
+                    $("#backToExercise").click(function(){
+                            console.log("Back to exercise button pressed.");
+                            $.mobile.changePage("#exercise",{reverse:false,transition:"pop"});
+                            stopAudio();
+                            clearDataForScore();
+                    });
+                });
+              
+              //insert the score and comment of sensei
+                $(document).ready(function() {
+                    $("#scoringFormSubmitButton").click(function(){
+                        onclickFormSubmitNewScoreComment();
+                        clearDataForScore();
+                    });
+                });
+            </script>
         </div>
     </div>
     
@@ -572,15 +593,18 @@
             </div>
             
             <script>
-                $(document).ready(function(){
-                    $("#studentFormSubmitButton").click(function(){
+                function clearStudentDataHolder(){
                             $("#studentImageHolder").css("display","none");
 
                             $("#studentImageHolder").attr("src","");
                             //Show save button
                             $("#saveStudentImage").html("");
-                            $("#saveStudentImage").hide();
-                            
+                            $("#saveStudentImage").hide();                    
+                }
+            
+                $(document).ready(function(){
+                    $("#studentFormSubmitButton").click(function(){
+                        clearStudentDataHolder();
                         onFormSubmitStudentRegistration();
                     });
                 });
